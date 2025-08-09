@@ -90,7 +90,20 @@ body {
   color: white !important;
 }
 
-.calendar-purple [data-range-middle="true"] {
-  background-color: rgb(243 232 255) !important; /* purple-100 */
-  color: rgb(88 28 135) !important; /* purple-900 */
-}
+        .calendar-purple [data-range-middle="true"] {
+          background-color: rgb(243 232 255) !important; /* purple-100 */
+          color: rgb(88 28 135) !important; /* purple-900 */
+        }
+
+        /* Mobile bottom navigation safe area support */
+        .h-safe-area-inset-bottom {
+          height: env(safe-area-inset-bottom);
+          min-height: 8px; /* Fallback for older devices */
+        }
+
+        /* Ensure content doesn't get hidden behind mobile nav */
+        @media (max-width: 767px) {
+          body {
+            padding-bottom: env(safe-area-inset-bottom);
+          }
+        }

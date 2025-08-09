@@ -8,7 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 // Mock data for study groups
 const mockGroups = [
   {
-    id: 1,
+    id: "1",
     name: "Advanced Calculus Study Circle",
     subject: "Mathematics",
     description: "Weekly calculus problem-solving sessions with focus on derivatives and integrals.",
@@ -20,7 +20,7 @@ const mockGroups = [
     tags: ["Calculus", "Problem Solving", "Derivatives"],
   },
   {
-    id: 2,
+    id: "2",
     name: "React Development Bootcamp",
     subject: "Computer Science",
     description: "Learn React fundamentals through hands-on projects and peer programming.",
@@ -32,7 +32,7 @@ const mockGroups = [
     tags: ["React", "JavaScript", "Web Development"],
   },
   {
-    id: 3,
+    id: "3",
     name: "Organic Chemistry Lab Prep",
     subject: "Chemistry",
     description: "Prepare for organic chemistry labs and review reaction mechanisms.",
@@ -44,7 +44,7 @@ const mockGroups = [
     tags: ["Organic Chemistry", "Lab Prep", "Mechanisms"],
   },
   {
-    id: 4,
+    id: "4",
     name: "Data Structures & Algorithms",
     subject: "Computer Science",
     description: "Master coding interviews and competitive programming together.",
@@ -56,7 +56,7 @@ const mockGroups = [
     tags: ["Algorithms", "Data Structures", "Coding Interview"],
   },
   {
-    id: 5,
+    id: "5",
     name: "Business Analytics Study Group",
     subject: "Business",
     description: "Analyze case studies and work on business strategy projects collaboratively.",
@@ -68,7 +68,7 @@ const mockGroups = [
     tags: ["Analytics", "Case Studies", "Strategy"],
   },
   {
-    id: 6,
+    id: "6",
     name: "Physics Problem Solvers",
     subject: "Physics",
     description: "Tackle challenging physics problems from mechanics to quantum physics.",

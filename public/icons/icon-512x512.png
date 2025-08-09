@@ -1,0 +1,61 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#9333ea"/>
+  
+  <!-- Main Icon Elements -->
+  <!-- Book/Study Symbol -->
+  <g transform="translate(150, 120)">
+    <!-- Open Book -->
+    <path d="M50 80 L50 280 L110 260 L110 60 Z" fill="#ffffff" opacity="0.9"/>
+    <path d="M110 60 L110 260 L170 280 L170 80 Z" fill="#ffffff" opacity="0.7"/>
+    
+    <!-- Book Spine Line -->
+    <line x1="110" y1="60" x2="110" y2="260" stroke="#9333ea" stroke-width="2"/>
+    
+    <!-- Pages Lines -->
+    <line x1="70" y1="100" x2="90" y2="95" stroke="#9333ea" stroke-width="1.5" opacity="0.6"/>
+    <line x1="70" y1="120" x2="90" y2="115" stroke="#9333ea" stroke-width="1.5" opacity="0.6"/>
+    <line x1="70" y1="140" x2="90" y2="135" stroke="#9333ea" stroke-width="1.5" opacity="0.6"/>
+    
+    <line x1="130" y1="95" x2="150" y2="100" stroke="#9333ea" stroke-width="1.5" opacity="0.6"/>
+    <line x1="130" y1="115" x2="150" y2="120" stroke="#9333ea" stroke-width="1.5" opacity="0.6"/>
+    <line x1="130" y1="135" x2="150" y2="140" stroke="#9333ea" stroke-width="1.5" opacity="0.6"/>
+  </g>
+  
+  <!-- Group/People Symbol -->
+  <g transform="translate(180, 320)">
+    <!-- Three People Silhouettes -->
+    <!-- Person 1 -->
+    <circle cx="40" cy="30" r="15" fill="#ffffff"/>
+    <ellipse cx="40" cy="60" rx="20" ry="25" fill="#ffffff"/>
+    
+    <!-- Person 2 (Center) -->
+    <circle cx="80" cy="25" r="18" fill="#ffffff" opacity="0.9"/>
+    <ellipse cx="80" cy="58" rx="24" ry="30" fill="#ffffff" opacity="0.9"/>
+    
+    <!-- Person 3 -->
+    <circle cx="120" cy="30" r="15" fill="#ffffff" opacity="0.8"/>
+    <ellipse cx="120" cy="60" rx="20" ry="25" fill="#ffffff" opacity="0.8"/>
+  </g>
+  
+  <!-- Letter "Z" Logo -->
+  <g transform="translate(200, 180)">
+    <path d="M20 40 L80 40 L20 80 L80 80" 
+          stroke="#ffffff" 
+          stroke-width="8" 
+          fill="none" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+    <path d="M20 40 L80 80" 
+          stroke="#ffffff" 
+          stroke-width="8" 
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- Connecting Lines (Network Effect) -->
+  <g opacity="0.3">
+    <line x1="220" y1="160" x2="200" y2="340" stroke="#ffffff" stroke-width="2"/>
+    <line x1="280" y1="160" x2="220" y2="340" stroke="#ffffff" stroke-width="2"/>
+    <line x1="260" y1="200" x2="180" y2="350" stroke="#ffffff" stroke-width="1.5"/>
+  </g>
+</svg>

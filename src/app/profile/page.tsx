@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, Lock, Eye, EyeOff, Save, Edit3, X, Plus, Trash2, MessageSquare, Phone, Facebook, Instagram } from "lucide-react";
+import { User, Lock, Eye, EyeOff, Save, Edit3, X, Plus, Trash2, MessageSquare, Phone, Facebook, Instagram, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -281,6 +281,20 @@ export default function ProfilePage() {
 
   const confirmDeleteContact = (contactId: string) => {
     setDeletingContact(contactId);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+        setError("Failed to sign out");
+      }
+      // The auth context will handle the redirect
+    } catch (err: any) {
+      console.error('Error signing out:', err);
+      setError(err.message || "Failed to sign out");
+    }
   };
 
   if (loading) {
@@ -805,6 +819,33 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Sign Out Section */}
+        <div className="mt-8 pt-8 border-t border-gray-200">
+          <Card className="bg-red-50 border-red-200">
+            <CardHeader>
+              <CardTitle className="flex items-center text-red-800">
+                <LogOut className="h-5 w-5 mr-2" />
+                Sign Out
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-red-700">
+                  Sign out of your account. You'll need to sign in again to access your profile and groups.
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={handleSignOut}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Confirmation Dialog */}

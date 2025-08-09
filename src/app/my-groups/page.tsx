@@ -69,7 +69,7 @@ export default function MyGroupsPage() {
 
         // Transform data and add member counts
         const groupsWithCounts = await Promise.all(
-          (data || []).map(async (item) => {
+          (data || []).map(async (item: any) => {
             const group = item.study_groups;
             if (!group) return null;
 

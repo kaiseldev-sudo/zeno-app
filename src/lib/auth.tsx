@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { checkRateLimit, RATE_LIMITS, createRateLimitError } from "./security";
 
 interface AuthContextType {
   user: User | null;
@@ -49,6 +50,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
+      // Check rate limit for signup attempts
+      const rateLimitResult = checkRateLimit(email, RATE_LIMITS.SIGNUP);
+      if (!rateLimitResult.allowed) {
+        const rateLimitError = createRateLimitError(rateLimitResult.resetTime);
+        return { data: null, error: rateLimitError };
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -85,6 +93,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Check rate limit for login attempts
+      const rateLimitResult = checkRateLimit(email, RATE_LIMITS.LOGIN);
+      if (!rateLimitResult.allowed) {
+        const rateLimitError = createRateLimitError(rateLimitResult.resetTime);
+        return { data: null, error: rateLimitError };
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,

@@ -7,6 +7,8 @@ import { Mail, Lock, Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
+import SecureForm from "@/components/SecureForm";
+import { RATE_LIMITS } from "@/lib/security";
 
 export default function Login() {
   const router = useRouter();
@@ -27,15 +29,18 @@ export default function Login() {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSecureSubmit = async (formData: FormData, csrfToken: string) => {
     setIsLoading(true);
     setError("");
 
-    const { data, error } = await signIn(formData.email, formData.password);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    const { data, error } = await signIn(email, password);
 
     if (error) {
       setError(error.message || "Failed to sign in");
+      throw new Error(error.message || "Failed to sign in");
     } else {
       router.push("/dashboard");
     }
@@ -60,7 +65,13 @@ export default function Login() {
         </div>
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <SecureForm
+          onSubmit={handleSecureSubmit}
+          rateLimitConfig={RATE_LIMITS.LOGIN}
+          rateLimitIdentifier={formData.email || 'anonymous'}
+          className="space-y-6"
+          disabled={isLoading}
+        >
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -162,7 +173,7 @@ export default function Login() {
               </>
             )}
           </Button>
-        </form>
+        </SecureForm>
 
         {/* Sign Up Link */}
         <div className="text-center">

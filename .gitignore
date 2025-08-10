@@ -152,3 +152,5 @@ generate-icons.html
 
 # ESLint cache
 .eslintcache
+
+SECURITY_IMPLEMENTATION.md

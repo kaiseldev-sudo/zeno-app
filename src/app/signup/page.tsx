@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { User, Mail, Lock, GraduationCap, Calendar, Eye, EyeOff, Loader2, UserPlus, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import SecureForm from "@/components/SecureForm";
+import { RATE_LIMITS } from "@/lib/security";
 import { useAuth } from "@/lib/auth";
 
 export default function SignUp() {
@@ -49,57 +51,65 @@ export default function SignUp() {
     "PhD",
   ];
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSecureSubmit = async (formData: FormData, csrfToken: string) => {
     setError("");
     setLoading(true);
 
+    const data = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      confirmPassword: formData.get('confirmPassword') as string,
+      course: formData.get('course') as string,
+      yearLevel: formData.get('yearLevel') as string
+    };
+
     // Validate form
-    if (formData.password !== formData.confirmPassword) {
+    if (data.password !== data.confirmPassword) {
       setError("Passwords don't match");
       setLoading(false);
-      return;
+      throw new Error("Passwords don't match");
     }
 
-    if (formData.password.length < 6) {
+    if (data.password.length < 6) {
       setError("Password must be at least 6 characters");
       setLoading(false);
-      return;
+      throw new Error("Password must be at least 6 characters");
     }
 
-    if (!formData.name.trim()) {
+    if (!data.name.trim()) {
       setError("Please enter your full name");
       setLoading(false);
-      return;
+      throw new Error("Please enter your full name");
     }
 
-    if (!formData.course) {
+    if (!data.course) {
       setError("Please select your course/subject");
       setLoading(false);
-      return;
+      throw new Error("Please select your course/subject");
     }
 
-    if (!formData.yearLevel) {
+    if (!data.yearLevel) {
       setError("Please select your year level");
       setLoading(false);
-      return;
+      throw new Error("Please select your year level");
     }
 
     try {
       // Sign up using auth context
-      const { data, error: signUpError } = await signUp(
-        formData.email,
-        formData.password,
+      const { data: result, error: signUpError } = await signUp(
+        data.email,
+        data.password,
         {
-          name: formData.name,
-          course: formData.course,
-          yearLevel: formData.yearLevel,
+          name: data.name,
+          course: data.course,
+          yearLevel: data.yearLevel,
         }
       );
 
       if (signUpError) throw signUpError;
 
-      if (data.user) {
+      if (result.user) {
         setSuccess(true);
         // Redirect after successful signup
         setTimeout(() => {
@@ -108,6 +118,7 @@ export default function SignUp() {
       }
     } catch (error: any) {
       setError(error.message || "An error occurred during signup");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -166,7 +177,13 @@ export default function SignUp() {
         </div>
 
         {/* Signup Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <SecureForm
+          onSubmit={handleSecureSubmit}
+          rateLimitConfig={RATE_LIMITS.SIGNUP}
+          rateLimitIdentifier={formData.email || 'anonymous'}
+          className="space-y-6"
+          disabled={loading}
+        >
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -356,7 +373,7 @@ export default function SignUp() {
               </>
             )}
           </Button>
-        </form>
+        </SecureForm>
 
         {/* Sign In Link */}
         <div className="text-center">

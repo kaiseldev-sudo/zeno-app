@@ -1,23 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bug, MessageSquare, AlertTriangle, Lightbulb, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 
 export default function ReportProblem() {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     type: "",
     subject: "",
     email: "",
+    name: "",
     description: "",
     steps: "",
+    expectedBehavior: "",
+    actualBehavior: "",
     browser: "",
-    device: ""
+    device: "",
+    urgency: "medium"
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  // Auto-fill email if user is logged in
+  useEffect(() => {
+    if (user?.email) {
+      setFormData(prev => ({ ...prev, email: user.email as string }));
+    }
+  }, [user]);
 
   const problemTypes = [
     {
@@ -28,25 +43,32 @@ export default function ReportProblem() {
       color: "red"
     },
     {
-      id: "feedback",
-      title: "General Feedback",
-      description: "Share your thoughts and suggestions",
-      icon: MessageSquare,
-      color: "blue"
-    },
-    {
-      id: "issue",
-      title: "Technical Issue",
-      description: "Problems with login, loading, or performance",
-      icon: AlertTriangle,
-      color: "orange"
-    },
-    {
       id: "feature",
       title: "Feature Request",
       description: "Suggest new features or improvements",
       icon: Lightbulb,
       color: "green"
+    },
+    {
+      id: "ui",
+      title: "UI/UX Issue",
+      description: "Problems with design, layout, or user experience",
+      icon: MessageSquare,
+      color: "blue"
+    },
+    {
+      id: "performance",
+      title: "Performance Issue",
+      description: "Slow loading, lag, or other performance problems",
+      icon: AlertTriangle,
+      color: "orange"
+    },
+    {
+      id: "other",
+      title: "Other",
+      description: "General feedback or other issues",
+      icon: MessageSquare,
+      color: "purple"
     }
   ];
 
@@ -61,12 +83,46 @@ export default function ReportProblem() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError("");
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      // Get browser and device info automatically
+      const browserInfo = `${navigator.userAgent}`;
+      const deviceInfo = `Screen: ${screen.width}x${screen.height}, Platform: ${navigator.platform}`;
+
+      // Prepare the data for submission
+      const reportData = {
+        user_id: user?.id || null,
+        user_email: formData.email,
+        user_name: formData.name || null,
+        problem_type: formData.type,
+        title: formData.subject,
+        description: formData.description,
+        steps_to_reproduce: formData.steps || null,
+        expected_behavior: formData.expectedBehavior || null,
+        actual_behavior: formData.actualBehavior || null,
+        browser_info: formData.browser ? `${formData.browser} - ${browserInfo}` : browserInfo,
+        device_info: formData.device ? `${formData.device} - ${deviceInfo}` : deviceInfo,
+        urgency: formData.urgency,
+        status: 'open'
+      };
+
+      // Submit to Supabase
+      const { error } = await supabase
+        .from('problem_reports')
+        .insert([reportData]);
+
+      if (error) {
+        throw error;
+      }
+
+      setIsSubmitted(true);
+    } catch (error: any) {
+      console.error('Error submitting report:', error);
+      setSubmitError(error.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSubmitted) {
@@ -91,14 +147,19 @@ export default function ReportProblem() {
               </Button>
               <Button variant="outline" className="w-full" onClick={() => {
                 setIsSubmitted(false);
+                setSubmitError("");
                 setFormData({
                   type: "",
                   subject: "",
-                  email: "",
+                  email: user?.email || "",
+                  name: "",
                   description: "",
                   steps: "",
+                  expectedBehavior: "",
+                  actualBehavior: "",
                   browser: "",
-                  device: ""
+                  device: "",
+                  urgency: "medium"
                 });
               }}>
                 Submit Another Report
@@ -163,13 +224,15 @@ export default function ReportProblem() {
                         type.color === 'red' ? 'bg-red-100' :
                         type.color === 'blue' ? 'bg-blue-100' :
                         type.color === 'orange' ? 'bg-orange-100' :
-                        'bg-green-100'
+                        type.color === 'green' ? 'bg-green-100' :
+                        'bg-purple-100'
                       }`}>
                         <IconComponent className={`h-4 w-4 ${
                           type.color === 'red' ? 'text-red-600' :
                           type.color === 'blue' ? 'text-blue-600' :
                           type.color === 'orange' ? 'text-orange-600' :
-                          'text-green-600'
+                          type.color === 'green' ? 'text-green-600' :
+                          'text-purple-600'
                         }`} />
                       </div>
                       <div>
@@ -182,6 +245,17 @@ export default function ReportProblem() {
               })}
             </div>
           </div>
+
+          {/* Error Display */}
+          {submitError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+                <p className="text-red-800 font-medium">Error</p>
+              </div>
+              <p className="text-red-700 mt-1">{submitError}</p>
+            </div>
+          )}
 
           {/* Basic Information */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -205,6 +279,23 @@ export default function ReportProblem() {
                 />
               </div>
               <div>
+                <label htmlFor="urgency" className="block text-sm font-medium text-gray-700 mb-2">
+                  Priority Level
+                </label>
+                <select
+                  id="urgency"
+                  name="urgency"
+                  value={formData.urgency}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+              <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address <span className="text-red-500">*</span>
                 </label>
@@ -216,6 +307,20 @@ export default function ReportProblem() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="your.email@example.com"
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                  Your Name
+                </label>
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="Your full name (optional)"
                   className="w-full"
                 />
               </div>
@@ -244,27 +349,59 @@ export default function ReportProblem() {
                 />
               </div>
 
-              {(formData.type === 'bug' || formData.type === 'issue') && (
-                <div>
-                  <label htmlFor="steps" className="block text-sm font-medium text-gray-700 mb-2">
-                    Steps to Reproduce
-                  </label>
-                  <textarea
-                    id="steps"
-                    name="steps"
-                    rows={4}
-                    value={formData.steps}
-                    onChange={handleInputChange}
-                    placeholder="1. Go to...&#10;2. Click on...&#10;3. See error..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
-                  />
-                </div>
+              {(formData.type === 'bug' || formData.type === 'performance') && (
+                <>
+                  <div>
+                    <label htmlFor="steps" className="block text-sm font-medium text-gray-700 mb-2">
+                      Steps to Reproduce
+                    </label>
+                    <textarea
+                      id="steps"
+                      name="steps"
+                      rows={3}
+                      value={formData.steps}
+                      onChange={handleInputChange}
+                      placeholder="1. Go to...&#10;2. Click on...&#10;3. See error..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                    />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="expectedBehavior" className="block text-sm font-medium text-gray-700 mb-2">
+                        Expected Behavior
+                      </label>
+                      <textarea
+                        id="expectedBehavior"
+                        name="expectedBehavior"
+                        rows={3}
+                        value={formData.expectedBehavior}
+                        onChange={handleInputChange}
+                        placeholder="What should happen?"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="actualBehavior" className="block text-sm font-medium text-gray-700 mb-2">
+                        Actual Behavior
+                      </label>
+                      <textarea
+                        id="actualBehavior"
+                        name="actualBehavior"
+                        rows={3}
+                        value={formData.actualBehavior}
+                        onChange={handleInputChange}
+                        placeholder="What actually happened?"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                      />
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
 
           {/* Technical Information */}
-          {(formData.type === 'bug' || formData.type === 'issue') && (
+          {(formData.type === 'bug' || formData.type === 'performance' || formData.type === 'ui') && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Technical Information
@@ -330,7 +467,8 @@ export default function ReportProblem() {
             <Button
               type="submit"
               disabled={!formData.type || !formData.subject || !formData.email || !formData.description || isSubmitting}
-              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300"
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed w-full"
+              variant="primary"
             >
               {isSubmitting ? (
                 <>

@@ -36,12 +36,16 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicons/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicons/android-chrome-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/icons/icon-152x152.png", sizes: "152x152", type: "image/png" },
-      { url: "/icons/icon-180x180.png", sizes: "180x180", type: "image/png" },
+      { url: "/favicons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { url: "/favicons/favicon.ico", type: "image/x-icon" },
     ],
   },
 };
@@ -66,35 +70,27 @@ export default function RootLayout({
         <meta name="msapplication-tap-highlight" content="no" />
         <meta name="theme-color" content="#9333ea" />
         
-        <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
+        <link rel="apple-touch-icon" href="/favicons/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png" />
         
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="mask-icon" href="/icons/safari-pinned-tab.svg" color="#9333ea" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicons/favicon.ico" />
         
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:url" content="https://zeno-app.vercel.app" />
         <meta name="twitter:title" content="Zeno - Study Group Finder" />
         <meta name="twitter:description" content="Find and join study groups with fellow students" />
-        <meta name="twitter:image" content="https://zeno-app.vercel.app/icons/icon-192x192.png" />
+        <meta name="twitter:image" content="https://zeno-app.vercel.app/favicons/android-chrome-192x192.png" />
         <meta name="twitter:creator" content="@zenoapp" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Zeno - Study Group Finder" />
         <meta property="og:description" content="Find and join study groups with fellow students" />
         <meta property="og:site_name" content="Zeno - Study Group Finder" />
         <meta property="og:url" content="https://zeno-app.vercel.app" />
-        <meta property="og:image" content="https://zeno-app.vercel.app/icons/icon-192x192.png" />
-        
-        <link rel="apple-touch-startup-image" href="/icons/apple-splash-2048-2732.jpg" sizes="2048x2732" />
-        <link rel="apple-touch-startup-image" href="/icons/apple-splash-1668-2224.jpg" sizes="1668x2224" />
-        <link rel="apple-touch-startup-image" href="/icons/apple-splash-1536-2048.jpg" sizes="1536x2048" />
-        <link rel="apple-touch-startup-image" href="/icons/apple-splash-1125-2436.jpg" sizes="1125x2436" />
-        <link rel="apple-touch-startup-image" href="/icons/apple-splash-828-1792.jpg" sizes="828x1792" />
-        <link rel="apple-touch-startup-image" href="/icons/apple-splash-750-1334.jpg" sizes="750x1334" />
+        <meta property="og:image" content="https://zeno-app.vercel.app/favicons/android-chrome-192x192.png" />
+
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

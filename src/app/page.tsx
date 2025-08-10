@@ -12,7 +12,7 @@ export default function Home() {
           <div className="mb-8">
             <Badge className="bg-amber-400 text-gray-00 border-amber-500 mb-6">
               <TriangleAlert className="w-4 h-4 mr-2" />
-              This is website is under development!
+              This website is under development!
             </Badge>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
@@ -35,20 +35,6 @@ export default function Home() {
                 Join Free Today
               </Link>
             </Button>
-          </div>
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              <span>100% Free</span>
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              <span>No Credit Card Required</span>
-            </div>
-            <div className="flex items-center">
-              <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-              <span>Instant Access</span>
-            </div>
           </div>
         </div>
       </section>

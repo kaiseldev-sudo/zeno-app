@@ -171,7 +171,7 @@ export default function MyGroupsPage() {
             </CardContent>
           </Card>
 
-          <Card className="transition-all duration-200 border-purple-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+          <Card className="border-purple-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg transition-colors duration-200 group-hover:bg-green-200">
@@ -185,7 +185,7 @@ export default function MyGroupsPage() {
             </CardContent>
           </Card>
 
-          <Card className="transition-all duration-200 border-purple-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+          <Card className="border-purple-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg transition-colors duration-200 group-hover:bg-blue-200">
@@ -310,7 +310,7 @@ function MyGroupCard({ group }: { group: MyGroup }) {
     <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden group border border-gray-200 bg-white flex flex-col">
       <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
         <div className="flex justify-between items-start mb-2 md:mb-3">
-          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200 text-xs">
+          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs">
             {group.subject}
           </Badge>
           <div className="flex items-center gap-1 md:gap-2">
@@ -374,7 +374,7 @@ function MyGroupCard({ group }: { group: MyGroup }) {
       <div className="flex gap-2 p-3 md:p-4 pt-0 mt-auto">
         <Button 
           variant="outline" 
-          className="flex-1 border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700 border-purple-300 hover:border-purple-500 text-xs md:text-sm h-8 md:h-10" 
+          className="flex-1 text-purple-600 hover:bg-purple-50 hover:text-purple-700 border-purple-300 hover:border-purple-500 text-xs md:text-sm h-8 md:h-10" 
           asChild
         >
           <Link href={`/groups/${group.id}`}>

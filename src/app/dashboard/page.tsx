@@ -135,7 +135,7 @@ export default function Dashboard() {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm border border-purple-300 p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -148,14 +148,14 @@ export default function Dashboard() {
                   placeholder="Search groups, subjects, or topics..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 border-purple-300"
                 />
               </div>
             </div>
 
             {/* Filter Toggle */}
             <Button
-              variant="outline"
+              variant="primary"
               onClick={() => setShowFilters(!showFilters)}
               className="lg:w-auto"
             >

@@ -55,6 +55,17 @@ export default function SecureForm({
     }
   }, [isBlocked, getRemainingTime, resetError]);
 
+  // Auto-dismiss submit errors after 1 second
+  useEffect(() => {
+    if (submitError && !isBlocked) {
+      const timer = setTimeout(() => {
+        setSubmitError('');
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [submitError, isBlocked]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitError('');

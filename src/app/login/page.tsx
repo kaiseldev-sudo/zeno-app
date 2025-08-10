@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, Loader2, LogIn } from "lucide-react";
@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import SecureForm from "@/components/SecureForm";
+import PasswordValidation from "@/components/PasswordValidation";
 import { RATE_LIMITS } from "@/lib/security";
+import { validatePassword } from "@/lib/passwordValidation";
 
 export default function Login() {
   const router = useRouter();
@@ -20,6 +22,20 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Password validation (simpler for login - just show strength)
+  const passwordValidation = useMemo(() => validatePassword(formData.password), [formData.password]);
+
+  // Auto-dismiss error messages after 1 second
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -80,13 +96,6 @@ export default function Login() {
           className="space-y-6"
           disabled={isLoading}
         >
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
           {/* Email Field */}
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -125,7 +134,15 @@ export default function Login() {
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="pl-10 pr-12 h-12"
+                className={`pl-10 pr-12 h-12 ${
+                  formData.password && passwordValidation.strength === 'weak' 
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                    : formData.password && passwordValidation.strength === 'strong'
+                    ? 'border-purple-300 focus:border-purple-500 focus:ring-purple-500'
+                    : formData.password && passwordValidation.strength === 'medium'
+                    ? 'border-yellow-300 focus:border-yellow-500 focus:ring-yellow-500'
+                    : ''
+                }`}
                 placeholder="Enter your password"
               />
               <button

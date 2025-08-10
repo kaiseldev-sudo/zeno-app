@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, GraduationCap, Calendar, Eye, EyeOff, Loader2, UserPlus, CheckCircle } from "lucide-react";
+import { User, Mail, Lock, GraduationCap, Calendar, Eye, EyeOff, Loader2, UserPlus, CheckCircle, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SecureForm from "@/components/SecureForm";
+import PasswordValidation from "@/components/PasswordValidation";
 import { RATE_LIMITS } from "@/lib/security";
 import { useAuth } from "@/lib/auth";
+import { validatePassword } from "@/lib/passwordValidation";
 
 export default function SignUp() {
   const router = useRouter();
@@ -26,6 +28,10 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  // Password validation
+  const passwordValidation = useMemo(() => validatePassword(formData.password), [formData.password]);
+  const passwordsMatch = formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
 
   const subjects = [
     "Computer Science",
@@ -71,10 +77,10 @@ export default function SignUp() {
       throw new Error("Passwords don't match");
     }
 
-    if (data.password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (!passwordValidation.isValid) {
+      setError("Password does not meet the requirements");
       setLoading(false);
-      throw new Error("Password must be at least 6 characters");
+      throw new Error("Password does not meet the requirements");
     }
 
     if (!data.name.trim()) {
@@ -311,9 +317,14 @@ export default function SignUp() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="pl-10 pr-12 h-12"
+                className={`pl-10 pr-12 h-12 ${
+                  formData.password && !passwordValidation.isValid 
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                    : formData.password && passwordValidation.isValid 
+                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500' 
+                    : ''
+                }`}
                 placeholder="Enter your password"
-                minLength={6}
               />
               <button
                 type="button"
@@ -327,6 +338,13 @@ export default function SignUp() {
                 )}
               </button>
             </div>
+            
+            {/* Password Validation */}
+            <PasswordValidation 
+              validation={passwordValidation}
+              password={formData.password}
+              showStrength={true}
+            />
           </div>
 
           {/* Confirm Password Field */}
@@ -345,7 +363,13 @@ export default function SignUp() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="pl-10 pr-12 h-12"
+                className={`pl-10 pr-12 h-12 ${
+                  formData.confirmPassword && !passwordsMatch 
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
+                    : formData.confirmPassword && passwordsMatch 
+                    ? 'border-green-300 focus:border-green-500 focus:ring-green-500' 
+                    : ''
+                }`}
                 placeholder="Confirm your password"
               />
               <button
@@ -360,13 +384,32 @@ export default function SignUp() {
                 )}
               </button>
             </div>
+            
+            {/* Password Match Validation */}
+            {formData.confirmPassword && (
+              <div className={`mt-2 text-sm flex items-center ${
+                passwordsMatch ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {passwordsMatch ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Passwords match
+                  </>
+                ) : (
+                  <>
+                    <X className="h-4 w-4 mr-2" />
+                    Passwords do not match
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 mt-4"
+            disabled={loading || !passwordValidation.isValid || !passwordsMatch}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

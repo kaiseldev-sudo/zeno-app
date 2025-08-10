@@ -87,7 +87,7 @@ export default function GroupCard({ group }: GroupCardProps) {
   };
 
   return (
-    <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden group border border-gray-200 bg-white flex flex-col">
+    <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden group border border-purple-300 hover:border-purple-500 bg-white flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start mb-3">
           <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200">

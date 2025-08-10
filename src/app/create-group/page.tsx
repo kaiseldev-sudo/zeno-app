@@ -301,7 +301,7 @@ export default function CreateGroup() {
                 name="subject"
                 value={formData.subject}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                className="w-full pl-10 pr-4 py-2 border rounded-md  border-purple-300 hover:border-purple-500 bg-white text-gray-900"
                 required
               >
                 <option value="">Select a subject</option>
@@ -329,7 +329,7 @@ export default function CreateGroup() {
                 value={formData.description}
                 onChange={handleChange}
                 rows={4}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                className="w-full pl-10 pr-4 py-3 border rounded-md border-purple-300 hover:border-purple-500 bg-white text-gray-900 resize-none"
                 placeholder="Describe what your study group will focus on, goals, and what members can expect..."
                 required
               />
@@ -362,7 +362,7 @@ export default function CreateGroup() {
                   type="button"
                   onClick={handleAddTag}
                   disabled={!tagInput.trim() || tags.includes(tagInput.trim()) || tags.length >= 5}
-                  variant="outline"
+                  variant="primary"
                   className="px-4"
                 >
                   Add
@@ -412,7 +412,7 @@ export default function CreateGroup() {
                   name="frequency"
                   value={formData.frequency}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  className="w-full pl-10 pr-4 py-2 borderrounded-md border-purple-300 hover:border-purple-500 bg-white text-gray-900"
                   required
                 >
                   <option value="">Select frequency</option>
@@ -439,7 +439,7 @@ export default function CreateGroup() {
                   name="platform"
                   value={formData.platform}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                  className="w-full pl-10 pr-4 py-2 border rounded-md border-purple-300 hover:border-purple-500 bg-white text-gray-900"
                   required
                 >
                   <option value="">Select platform</option>
@@ -468,7 +468,7 @@ export default function CreateGroup() {
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal border-purple-300 hover:border-purple-500",
                         !selectedDays.length && "text-muted-foreground"
                       )}
                     >

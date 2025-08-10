@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { supabase, safeGetSession, safeSignOut } from "./supabase";
+import { supabase, safeGetSession, safeSignOut, getBaseUrl } from "./supabase";
 import { checkRateLimit, RATE_LIMITS, createRateLimitError } from "./security";
 
 interface AuthContextType {
@@ -83,7 +83,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
-          data: userData
+          data: userData,
+          emailRedirectTo: `${getBaseUrl()}/dashboard`
         }
       });
 
@@ -122,12 +123,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error: rateLimitError };
       }
 
+      // First, check if user exists in our profiles table
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .single();
+
+      // Attempt sign in
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Provide more specific error messages based on the error and user existence
+        if (error.message.includes('Invalid login credentials')) {
+          if (!profileData && profileError) {
+            // User doesn't exist in our profiles table
+            const userNotFoundError = new Error('User not found. Please check your email or sign up for an account.');
+            return { data: null, error: userNotFoundError };
+          } else {
+            // User exists but password is wrong
+            const wrongPasswordError = new Error('Invalid password. Please check your password and try again.');
+            return { data: null, error: wrongPasswordError };
+          }
+        }
+        throw error;
+      }
+      
       return { data, error: null };
     } catch (error) {
       console.error('Sign in error:', error);

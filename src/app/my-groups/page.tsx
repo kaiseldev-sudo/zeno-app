@@ -144,8 +144,8 @@ export default function MyGroupsPage() {
               </p>
             </div>
             
-            <div className="mt-4 lg:mt-0">
-              <Button asChild variant="primary">
+            <div className="mt-4 lg:mt-0 w-full lg:w-auto">
+              <Button asChild variant="primary" className="w-full lg:w-auto">
                 <Link href="/create-group">
                   <Plus className="h-4 w-4 mr-2" />
                   Create New Group
@@ -156,44 +156,44 @@ export default function MyGroupsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
+          <Card className="border-purple-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Users className="h-6 w-6 text-purple-600" />
+                <div className="p-2 bg-purple-100 rounded-lg transition-colors duration-200 group-hover:bg-purple-200">
+                  <Users className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Groups</p>
-                  <p className="text-2xl font-bold text-gray-900">{groups.length}</p>
+                <div className="ml-3 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600 transition-colors duration-200">Total Groups</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900 transition-colors duration-200">{groups.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="transition-all duration-200 border-purple-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Crown className="h-6 w-6 text-green-600" />
+                <div className="p-2 bg-green-100 rounded-lg transition-colors duration-200 group-hover:bg-green-200">
+                  <Crown className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Groups Created</p>
-                  <p className="text-2xl font-bold text-gray-900">{createdGroups.length}</p>
+                <div className="ml-3 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600 transition-colors duration-200">Groups Created</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900 transition-colors duration-200">{createdGroups.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="transition-all duration-200 border-purple-300 hover:border-purple-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <BookOpen className="h-6 w-6 text-blue-600" />
+                <div className="p-2 bg-blue-100 rounded-lg transition-colors duration-200 group-hover:bg-blue-200">
+                  <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Groups Joined</p>
-                  <p className="text-2xl font-bold text-gray-900">{joinedGroups.length}</p>
+                <div className="ml-3 md:ml-4">
+                  <p className="text-xs md:text-sm font-medium text-gray-600 transition-colors duration-200">Groups Joined</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900 transition-colors duration-200">{joinedGroups.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -201,8 +201,8 @@ export default function MyGroupsPage() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
+        <Card className="mb-8 border-purple-300">
+          <CardContent className="p-4 md:p-6">
             <div className="flex flex-col lg:flex-row gap-4">
               {/* Search */}
               <div className="flex-1">
@@ -215,14 +215,14 @@ export default function MyGroupsPage() {
                     placeholder="Search your groups..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 border-purple-300"
                   />
                 </div>
               </div>
 
               {/* Filter Toggle */}
               <Button
-                variant="outline"
+                variant="primary"
                 onClick={() => setShowFilters(!showFilters)}
                 className="lg:w-auto"
               >
@@ -264,7 +264,7 @@ export default function MyGroupsPage() {
 
         {/* Groups Grid */}
         {filteredGroups.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredGroups.map((group) => (
               <MyGroupCard key={group.id} group={group} />
             ))}
@@ -308,46 +308,46 @@ function MyGroupCard({ group }: { group: MyGroup }) {
 
   return (
     <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden group border border-gray-200 bg-white flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start mb-3">
-          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200">
+      <CardHeader className="pb-2 md:pb-3 p-4 md:p-6">
+        <div className="flex justify-between items-start mb-2 md:mb-3">
+          <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200 text-xs">
             {group.subject}
           </Badge>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             {group.is_creator && (
               <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                 <Crown className="h-3 w-3 mr-1" />
-                Creator
+                <span className="hidden sm:inline">Creator</span>
               </Badge>
             )}
             <div className="text-xs text-gray-500">
-              {Math.round(progressPercentage)}% full
+              {Math.round(progressPercentage)}%
             </div>
           </div>
         </div>
-        <CardTitle className="text-lg font-semibold text-gray-900 leading-tight">
+        <CardTitle className="text-base md:text-lg font-semibold text-gray-900 leading-tight">
           {group.name}
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4 pb-4 flex-1">
+      <CardContent className="space-y-3 md:space-y-4 pb-3 md:pb-4 flex-1 px-4 md:px-6">
         {/* Description */}
-        <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
+        <p className="text-gray-600 text-xs md:text-sm leading-relaxed line-clamp-2">
           {group.description}
         </p>
 
         {/* Details */}
-        <div className="space-y-2">
-          <div className="flex items-center text-sm text-gray-500">
-            <Clock className="w-4 h-4 mr-2 text-purple-500" />
+        <div className="space-y-1 md:space-y-2">
+          <div className="flex items-center text-xs md:text-sm text-gray-500">
+            <Clock className="w-3 h-3 md:w-4 md:h-4 mr-2 text-purple-500 flex-shrink-0" />
             <span className="truncate">{group.frequency} • {group.schedule}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-500">
-            <MapPin className="w-4 h-4 mr-2 text-purple-500" />
+          <div className="flex items-center text-xs md:text-sm text-gray-500">
+            <MapPin className="w-3 h-3 md:w-4 md:h-4 mr-2 text-purple-500 flex-shrink-0" />
             <span className="truncate">{group.platform}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-500">
-            <Calendar className="w-4 h-4 mr-2 text-purple-500" />
+          <div className="flex items-center text-xs md:text-sm text-gray-500">
+            <Calendar className="w-3 h-3 md:w-4 md:h-4 mr-2 text-purple-500 flex-shrink-0" />
             <span className="truncate">
               Joined {new Date(group.joined_at).toLocaleDateString()}
             </span>
@@ -355,40 +355,41 @@ function MyGroupCard({ group }: { group: MyGroup }) {
         </div>
 
         {/* Members Progress */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-sm">
+        <div className="space-y-1 md:space-y-2">
+          <div className="flex justify-between items-center text-xs md:text-sm">
             <span className="flex items-center text-gray-700">
-              <Users className="w-4 h-4 mr-1 text-purple-500" />
+              <Users className="w-3 h-3 md:w-4 md:h-4 mr-1 text-purple-500" />
               {group.member_count}/{group.max_members} members
             </span>
           </div>
-          <div className="w-full bg-gray-100 rounded-full h-2">
+          <div className="w-full bg-gray-100 rounded-full h-1.5 md:h-2">
             <div
-              className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 h-1.5 md:h-2 rounded-full transition-all duration-500"
               style={{ width: `${Math.min(progressPercentage, 100)}%` }}
             ></div>
           </div>
         </div>
       </CardContent>
 
-      <div className="flex gap-2 p-4 pt-0 mt-auto">
+      <div className="flex gap-2 p-3 md:p-4 pt-0 mt-auto">
         <Button 
           variant="outline" 
-          className="flex-1 border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300" 
+          className="flex-1 border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700 border-purple-300 hover:border-purple-500 text-xs md:text-sm h-8 md:h-10" 
           asChild
         >
           <Link href={`/groups/${group.id}`}>
-            View Details
+            <span className="hidden sm:inline">View Details</span>
+            <span className="sm:hidden">View</span>
           </Link>
         </Button>
         {group.is_creator && (
           <Button 
             variant="outline" 
-            className="border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-700" 
+            className="border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-700 h-8 md:h-10 px-2 md:px-3" 
             asChild
           >
             <Link href={`/groups/${group.id}/manage`}>
-              <Settings className="h-4 w-4" />
+              <Settings className="h-3 w-3 md:h-4 md:w-4" />
             </Link>
           </Button>
         )}

@@ -5,6 +5,27 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Get the base URL for redirects
+export const getBaseUrl = () => {
+  // For production, use the environment variable or fallback to the deployed domain
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  
+  // For production deployment, use the known domain
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://zeno-study.vercel.app';
+  }
+  
+  // For development, check for custom port
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  
+  // Fallback for development
+  return 'http://localhost:3000';
+}
+
 // Utility function to safely get current session
 export const safeGetSession = async () => {
   try {

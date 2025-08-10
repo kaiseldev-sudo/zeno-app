@@ -10,7 +10,7 @@ export default function Home() {
       <section className="bg-gradient-to-br from-purple-50 via-white to-purple-100 py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <div className="mb-8">
-            <Badge className="bg-amber-400 text-gray-00 border-amber-500 mb-6">
+            <Badge className="bg-amber-400 text-gray-900 border-amber-500 mb-6 animate-pulse">
               <TriangleAlert className="w-4 h-4 mr-2" />
               This website is under development!
             </Badge>

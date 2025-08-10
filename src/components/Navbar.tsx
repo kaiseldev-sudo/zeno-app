@@ -6,6 +6,7 @@ import { Users, Home, Plus, User, Search, LogOut, ChevronDown, LayoutDashboard }
 import { Button } from "./ui/button";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import MaintenanceToggle from "./MaintenanceToggle";
 
 export default function Navbar() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);

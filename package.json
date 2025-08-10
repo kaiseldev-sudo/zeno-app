@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "maintenance:enable": "node scripts/toggle-maintenance.js enable",
+    "maintenance:disable": "node scripts/toggle-maintenance.js disable",
+    "maintenance:toggle": "node scripts/toggle-maintenance.js toggle",
+    "maintenance:status": "node scripts/toggle-maintenance.js status"
   },
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.14",

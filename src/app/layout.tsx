@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import InstallPrompt from "@/components/InstallPrompt";
 import { AuthProvider } from "@/lib/auth";
+import { MaintenanceProvider } from "@/lib/maintenance";
+import { MaintenanceGuard } from "@/components/MaintenanceGuard";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
@@ -96,15 +98,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-1 pb-16 md:pb-0">
-              {children}
-            </main>
-            <Footer />
-            <MobileBottomNav />
-            <InstallPrompt />
-          </div>
+          <MaintenanceProvider>
+            <MaintenanceGuard>
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <main className="flex-1 pb-16 md:pb-0">
+                  {children}
+                </main>
+                <Footer />
+                <MobileBottomNav />
+                <InstallPrompt />
+              </div>
+            </MaintenanceGuard>
+          </MaintenanceProvider>
         </AuthProvider>
       </body>
     </html>

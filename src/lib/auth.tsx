@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
+import { supabase, safeGetSession, safeSignOut } from "./supabase";
 import { checkRateLimit, RATE_LIMITS, createRateLimitError } from "./security";
 
 interface AuthContextType {
@@ -24,14 +24,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error("Error getting session:", error);
-      } else {
-        setSession(session);
-        setUser(session?.user ?? null);
+      try {
+        const { session, error } = await safeGetSession();
+        if (error) {
+          console.error("Error getting session:", error);
+          // If there's an error getting session, treat as no session
+          setSession(null);
+          setUser(null);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        console.error("Failed to get initial session:", error);
+        // If there's an exception, treat as no session
+        setSession(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getInitialSession();
@@ -39,9 +50,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        try {
+          // Handle different auth events
+          if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+            setSession(session);
+            setUser(session?.user ?? null);
+          }
+          setLoading(false);
+        } catch (error) {
+          console.error("Auth state change error:", error);
+          // On error, clear the session
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+        }
       }
     );
 
@@ -115,10 +137,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error) {
+      const { error } = await safeSignOut();
+      if (error) {
+        console.error('Sign out error:', error);
+      }
+      // Always clear the local state regardless of success/failure
+      setSession(null);
+      setUser(null);
+    } catch (error: any) {
       console.error('Sign out error:', error);
+      // Even if signOut fails, clear the local state
+      setSession(null);
+      setUser(null);
     }
   };
 

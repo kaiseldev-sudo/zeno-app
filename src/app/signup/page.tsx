@@ -164,13 +164,20 @@ export default function SignUp() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8">
         {/* Header */}
-        <div className="text-center">
+        <div className="text-center mt-4">
           <div className="flex justify-center mb-6">
-            <div className="bg-purple-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center">
-              <UserPlus className="h-8 w-8" />
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center space-x-3 group">
+                <div className="bg-purple-600 text-white w-16 h-16 rounded-xl flex items-center justify-center transition-transform shadow-md">
+                  <span className="font-bold text-4xl">Z</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-2xl text-gray-900">Zeno</span>
+                  <span className="text-xs text-gray-500 -mt-1">Study Groups</span>
+                </div>
+              </Link>
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Join Zeno</h2>
           <p className="mt-2 text-gray-600">
             Create your account and start finding study groups that match your interests
           </p>
@@ -191,7 +198,7 @@ export default function SignUp() {
             </div>
           )}
           {/* Full Name */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
               Full Name
             </label>
@@ -206,14 +213,14 @@ export default function SignUp() {
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 h-12"
                 placeholder="Enter your full name"
               />
             </div>
           </div>
 
           {/* Email Field */}
-          <div className="space-y-2">
+          <div className="space-y-3 mt-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email Address
             </label>
@@ -228,14 +235,14 @@ export default function SignUp() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="pl-10"
+                className="pl-10 h-12"
                 placeholder="Enter your email"
               />
             </div>
           </div>
 
           {/* Course Field */}
-          <div className="space-y-2">
+          <div className="space-y-3 mt-4">
             <label htmlFor="course" className="block text-sm font-medium text-gray-700">
               Course/Subject
             </label>
@@ -248,7 +255,7 @@ export default function SignUp() {
                 name="course"
                 value={formData.course}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                className="w-full pl-10 pr-4 h-12 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
                 required
               >
                 <option value="">Select your main subject</option>
@@ -262,7 +269,7 @@ export default function SignUp() {
           </div>
 
           {/* Year Level Field */}
-          <div className="space-y-2">
+          <div className="space-y-3 mt-4">
             <label htmlFor="yearLevel" className="block text-sm font-medium text-gray-700">
               Year Level
             </label>
@@ -275,7 +282,7 @@ export default function SignUp() {
                 name="yearLevel"
                 value={formData.yearLevel}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
+                className="w-full pl-10 pr-4 h-12 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
                 required
               >
                 <option value="">Select your year level</option>
@@ -289,7 +296,7 @@ export default function SignUp() {
           </div>
 
           {/* Password Field */}
-          <div className="space-y-2">
+          <div className="space-y-3 mt-4">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
@@ -304,7 +311,7 @@ export default function SignUp() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="pl-10 pr-12"
+                className="pl-10 pr-12 h-12"
                 placeholder="Enter your password"
                 minLength={6}
               />
@@ -323,7 +330,7 @@ export default function SignUp() {
           </div>
 
           {/* Confirm Password Field */}
-          <div className="space-y-2">
+          <div className="space-y-3 mt-4">
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
               Confirm Password
             </label>
@@ -338,7 +345,7 @@ export default function SignUp() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="pl-10 pr-12"
+                className="pl-10 pr-12 h-12"
                 placeholder="Confirm your password"
               />
               <button
@@ -359,7 +366,7 @@ export default function SignUp() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 mt-4"
           >
             {loading ? (
               <>

@@ -59,19 +59,41 @@ export default function SecureForm({
     e.preventDefault();
     setSubmitError('');
 
-    // Check if CSRF token is ready
-    if (!csrfReady || !csrfToken) {
-      setSubmitError('Security token not ready. Please refresh the page and try again.');
-      return;
-    }
-
-    // Check rate limit
+    // Check rate limit first
     if (!checkLimit()) {
       return; // Rate limit error will be shown by the hook
     }
 
     if (disabled || isSubmitting) {
       return;
+    }
+
+    // If CSRF token is not ready, wait a moment and try again
+    if (!csrfReady || !csrfToken) {
+      setSubmitError('Preparing security token, please wait a moment...');
+      
+      // Wait up to 3 seconds for token to be ready
+      let attempts = 0;
+      const maxAttempts = 30; // 3 seconds (100ms * 30)
+      
+      const waitForToken = async (): Promise<boolean> => {
+        while (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          attempts++;
+          
+          if (csrfToken && csrfReady) {
+            setSubmitError('');
+            return true;
+          }
+        }
+        return false;
+      };
+      
+      const tokenReady = await waitForToken();
+      if (!tokenReady) {
+        setSubmitError('Security token could not be generated. Please refresh the page and try again.');
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -84,7 +106,16 @@ export default function SecureForm({
       refreshToken();
     } catch (error: any) {
       console.error('Form submission error:', error);
-      setSubmitError(error.message || 'An error occurred while submitting the form.');
+      
+      // Handle specific authentication errors
+      if (error.message?.includes('session missing') || error.message?.includes('AuthSessionMissingError')) {
+        setSubmitError('Your session has expired. Please refresh the page and sign in again.');
+      } else if (error.message?.includes('Rate limit exceeded')) {
+        // Rate limit errors are handled by the rate limit hook
+        return;
+      } else {
+        setSubmitError(error.message || 'An error occurred while submitting the form.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -94,11 +125,15 @@ export default function SecureForm({
 
   return (
     <div className="w-full">
-      {/* Security Status Indicators (only in development) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mb-4 p-3 bg-gray-100 rounded-md text-sm text-gray-600">
-          <div>🔒 CSRF Token: {csrfReady ? '✅ Ready' : '⏳ Loading'}</div>
-          <div>🛡️ Rate Limit: {isBlocked ? '🚫 Blocked' : '✅ Available'}</div>
+
+
+      {/* CSRF Token Loading Indicator (production-friendly) */}
+      {!csrfReady && !isBlocked && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+            <p className="text-blue-800 text-sm">Initializing security features...</p>
+          </div>
         </div>
       )}
 
@@ -133,7 +168,7 @@ export default function SecureForm({
         <input type="hidden" name="csrf_token" value={csrfToken} />
         
         {/* Form Content */}
-        <div className={`${isSubmitting || isBlocked || !csrfReady ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className={`${isSubmitting || isBlocked ? 'opacity-50 pointer-events-none' : ''}`}>
           {children}
         </div>
       </form>

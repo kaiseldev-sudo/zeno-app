@@ -80,7 +80,7 @@ export default function ForgotPassword() {
             <Button
               onClick={() => window.location.reload()}
               variant="outline"
-              className="w-full"
+              className="w-full "
             >
               Send Another Email
             </Button>
@@ -147,7 +147,7 @@ export default function ForgotPassword() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-12"
                 placeholder="Enter your email address"
               />
             </div>

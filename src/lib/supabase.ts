@@ -5,6 +5,36 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Utility function to safely get current session
+export const safeGetSession = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Session retrieval error:', error);
+      return { session: null, error };
+    }
+    return { session, error: null };
+  } catch (error) {
+    console.error('Failed to get session:', error);
+    return { session: null, error };
+  }
+}
+
+// Utility function to safely sign out
+export const safeSignOut = async () => {
+  try {
+    const { session } = await safeGetSession();
+    if (session) {
+      const { error } = await supabase.auth.signOut();
+      return { error };
+    }
+    return { error: null };
+  } catch (error) {
+    console.error('Safe sign out error:', error);
+    return { error };
+  }
+}
+
 // Types for our database tables
 export type Profile = {
   id: string

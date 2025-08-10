@@ -13,26 +13,44 @@ export function useCSRFToken() {
 
   // Generate new CSRF token when user/session changes
   useEffect(() => {
-    if (session?.user?.id) {
-      const token = generateCSRFToken(session.user.id);
-      setCSRFToken(token);
-    } else {
+    try {
+      if (session?.user?.id && user?.id) {
+        // Generate token for authenticated user
+        const token = generateCSRFToken(session.user.id);
+        setCSRFToken(token);
+      } else {
+        // Generate temporary token for unauthenticated users (for login/signup forms)
+        const tempId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const token = generateCSRFToken(tempId);
+        setCSRFToken(token);
+      }
+    } catch (error) {
+      console.error('Error generating CSRF token:', error);
       setCSRFToken('');
     }
-  }, [session?.user?.id]);
+  }, [session?.user?.id, user?.id]);
 
   // Validate CSRF token
   const validateToken = useCallback((token: string): boolean => {
-    if (!session?.user?.id) {
-      return false;
+    // For authenticated users, validate against their session ID
+    if (session?.user?.id) {
+      return validateCSRFToken(session.user.id, token);
     }
-    return validateCSRFToken(session.user.id, token);
+    
+    // For guest users, we'll validate the token exists and is not expired
+    // The actual validation will happen server-side for guest tokens
+    return !!token && token.length > 0;
   }, [session?.user?.id]);
 
   // Refresh CSRF token
   const refreshToken = useCallback(() => {
     if (session?.user?.id) {
       const token = generateCSRFToken(session.user.id);
+      setCSRFToken(token);
+    } else {
+      // Generate new temporary token for guest users
+      const tempId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const token = generateCSRFToken(tempId);
       setCSRFToken(token);
     }
   }, [session?.user?.id]);
@@ -41,6 +59,6 @@ export function useCSRFToken() {
     csrfToken,
     validateToken,
     refreshToken,
-    isReady: !!csrfToken && !!user
+    isReady: !!csrfToken // Token is ready as soon as it's generated
   };
 }

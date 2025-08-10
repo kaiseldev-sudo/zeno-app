@@ -54,8 +54,16 @@ export default function Login() {
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="bg-purple-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center">
-              <LogIn className="h-8 w-8" />
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center space-x-3 group">
+                <div className="bg-purple-600 text-white w-16 h-16 rounded-xl flex items-center justify-center transition-transform shadow-md">
+                  <span className="font-bold text-4xl">Z</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-2xl text-gray-900">Zeno</span>
+                  <span className="text-xs text-gray-500 -mt-1">Study Groups</span>
+                </div>
+              </Link>
             </div>
           </div>
           <h2 className="text-3xl font-bold text-gray-900">Welcome Back</h2>
@@ -95,14 +103,14 @@ export default function Login() {
                 required
                 value={formData.email}
                 onChange={handleInputChange}
-                className="pl-10"
+                className="pl-10 h-12"
                 placeholder="Enter your email"
               />
             </div>
           </div>
 
           {/* Password Field */}
-          <div className="space-y-2">
+          <div className="space-y-2 mt-4">
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
@@ -117,7 +125,7 @@ export default function Login() {
                 required
                 value={formData.password}
                 onChange={handleInputChange}
-                className="pl-10 pr-12"
+                className="pl-10 pr-12 h-12"
                 placeholder="Enter your password"
               />
               <button
@@ -135,7 +143,7 @@ export default function Login() {
           </div>
 
           {/* Remember Me & Forgot Password */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mt-4">
             <div className="flex items-center">
               <input
                 id="remember-me"
@@ -159,7 +167,7 @@ export default function Login() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 mt-4"
           >
             {isLoading ? (
               <>

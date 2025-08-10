@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Filter, Users, Clock, MapPin, Plus, Star, TrendingUp, BookOpen, Calendar } from "lucide-react";
+import { Search, Filter, Users, Clock, MapPin, Plus, Star, TrendingUp, BookOpen, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import GroupCard from "@/components/GroupCard";
@@ -36,6 +36,8 @@ export default function Dashboard() {
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedFrequency, setSelectedFrequency] = useState("All Frequencies");
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   // Fetch groups from Supabase
   useEffect(() => {
@@ -45,7 +47,8 @@ export default function Dashboard() {
           .from('study_groups')
           .select(`
             *,
-            group_members(user_id)
+            group_members(user_id),
+            tags(name)
           `);
 
         if (error) {
@@ -58,10 +61,16 @@ export default function Dashboard() {
           ...group,
           members: group.group_members?.length || 0,
           maxMembers: group.max_members,
-          tags: [] // We'll add tags functionality later
+          tags: group.tags?.map((tag: any) => tag.name) || []
         })) || [];
 
         setGroups(groupsWithMembers);
+
+        // Fetch distinct active members count
+        const { data: membersData, error: membersError } = await supabase
+          .from('group_members')
+          .select('user_id');
+
       } catch (error) {
         console.error('Error fetching groups:', error);
       } finally {
@@ -82,6 +91,22 @@ export default function Dashboard() {
     return matchesSearch && matchesSubject && matchesFrequency;
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredGroups.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentGroups = filteredGroups.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedSubject, selectedFrequency]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <ProtectedRoute>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -98,68 +123,13 @@ export default function Dashboard() {
             </div>
             
             {/* Create Group Button */}
-            <div className="mt-4 lg:mt-0">
-              <Button asChild variant="primary">
+            <div className="mt-4 lg:mt-0 w-full lg:w-auto">
+              <Button asChild variant="primary" className="w-full lg:w-auto">
                 <Link href="/create-group">
                   <Plus className="h-4 w-4 mr-2" />
                   Create New Group
                 </Link>
               </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                               <p className="text-sm font-medium text-gray-600">Total Groups</p>
-               <p className="text-2xl font-bold text-gray-900">{groups.length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                               <p className="text-sm font-medium text-gray-600">Active Members</p>
-               <p className="text-2xl font-bold text-gray-900">
-                 {groups.reduce((sum: number, group: any) => sum + (group.members || 0), 0)}
-               </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <BookOpen className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                               <p className="text-sm font-medium text-gray-600">Subjects</p>
-               <p className="text-2xl font-bold text-gray-900">
-                 {new Set(groups.map((group: any) => group.subject).filter(Boolean)).size}
-               </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Calendar className="h-6 w-6 text-orange-600" />
-              </div>
-              <div className="ml-4">
-                               <p className="text-sm font-medium text-gray-600">This Week</p>
-               <p className="text-2xl font-bold text-gray-900">0</p>
-              </div>
             </div>
           </div>
         </div>
@@ -236,18 +206,87 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* Results Info */}
+        {!loading && filteredGroups.length > 0 && (
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-gray-600 text-sm">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredGroups.length)} of {filteredGroups.length} groups
+            </p>
+            <p className="text-gray-600 text-sm mt-2 sm:mt-0">
+              Page {currentPage} of {totalPages}
+            </p>
+          </div>
+        )}
+
         {/* Groups Grid */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading study groups...</p>
           </div>
-        ) : filteredGroups.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGroups.map((group) => (
-              <GroupCard key={group.id} group={group} />
-            ))}
-          </div>
+        ) : currentGroups.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {currentGroups.map((group) => (
+                <GroupCard key={group.id} group={group} />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex items-center"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    const showPage = 
+                      page === 1 || 
+                      page === totalPages || 
+                      page === currentPage || 
+                      (page >= currentPage - 1 && page <= currentPage + 1);
+
+                    if (!showPage) {
+                      // Show ellipsis
+                      if (page === currentPage - 2 || page === currentPage + 2) {
+                        return <span key={page} className="px-2 text-gray-400">...</span>;
+                      }
+                      return null;
+                    }
+
+                    return (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "primary" : "outline"}
+                        onClick={() => handlePageChange(page)}
+                        className="w-10 h-10 p-0"
+                      >
+                        {page}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-12">
             <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />

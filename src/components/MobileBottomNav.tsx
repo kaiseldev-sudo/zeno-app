@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Home, Users, Plus, User, Search } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -47,26 +47,23 @@ const navItems: NavItem[] = [
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, loading } = useAuth();
 
-  // Don't show on auth pages
-  const authPages = ["/login", "/signup", "/forgot-password", "/reset-password"];
-  if (authPages.includes(pathname)) {
-    return null;
-  }
+  // Note: Removed auth pages exclusion - navbar now shows on all pages
 
-  // Filter nav items based on auth status
-  const filteredNavItems = navItems.filter(item => {
-    if (item.requireAuth && !user) {
-      return false;
+  // Handle protected route clicks
+  const handleNavClick = (item: NavItem, e: React.MouseEvent) => {
+    if (item.requireAuth && !user && !loading) {
+      e.preventDefault();
+      router.push("/login");
     }
-    return true;
-  });
+  };
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
       <div className="flex items-center justify-around py-2 px-4">
-        {filteredNavItems.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           const IconComponent = item.icon;
 
@@ -74,6 +71,7 @@ export default function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={(e) => handleNavClick(item, e)}
               className={`flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-colors duration-200 ${
                 isActive
                   ? "text-purple-600"

@@ -307,7 +307,7 @@ function MyGroupCard({ group }: { group: MyGroup }) {
   const progressPercentage = (group.member_count / group.max_members) * 100;
 
   return (
-    <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden group border border-gray-200 bg-white">
+    <Card className="h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden group border border-gray-200 bg-white flex flex-col">
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start mb-3">
           <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200">
@@ -330,7 +330,7 @@ function MyGroupCard({ group }: { group: MyGroup }) {
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4 pb-4">
+      <CardContent className="space-y-4 pb-4 flex-1">
         {/* Description */}
         <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
           {group.description}
@@ -371,7 +371,7 @@ function MyGroupCard({ group }: { group: MyGroup }) {
         </div>
       </CardContent>
 
-      <div className="flex gap-2 p-4 pt-0">
+      <div className="flex gap-2 p-4 pt-0 mt-auto">
         <Button 
           variant="outline" 
           className="flex-1 border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300" 

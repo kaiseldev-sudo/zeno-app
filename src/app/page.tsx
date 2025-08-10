@@ -12,7 +12,7 @@ export default function Home() {
           <div className="mb-8">
             <Badge className="bg-amber-400 text-gray-00 border-amber-500 mb-6">
               <TriangleAlert className="w-4 h-4 mr-2" />
-              This is a under development
+              This is website is under development!
             </Badge>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">

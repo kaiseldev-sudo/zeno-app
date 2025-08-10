@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Users, BookOpen, Clock, MapPin, FileText, Calendar as CalendarIcon, ArrowLeft, Plus, Loader2, CalendarDays } from "lucide-react";
+import { Users, BookOpen, Clock, MapPin, FileText, Calendar as CalendarIcon, ArrowLeft, Plus, Loader2, CalendarDays, X, Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -26,6 +26,8 @@ export default function CreateGroup() {
     platform: "",
     maxMembers: "",
   });
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [selectedDays, setSelectedDays] = useState<Date[]>([]);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -143,6 +145,23 @@ export default function CreateGroup() {
         throw new Error("Group created but failed to add you as a member. Please try joining manually.");
       }
 
+      // Add tags if any were provided
+      if (tags.length > 0) {
+        const tagData = tags.map(tag => ({
+          name: tag,
+          group_id: groupData.id
+        }));
+
+        const { error: tagsError } = await supabase
+          .from('tags')
+          .insert(tagData);
+
+        if (tagsError) {
+          console.error('Error adding tags:', tagsError);
+          // Don't throw error for tags, just log it since the group was created successfully
+        }
+      }
+
       console.log("Group created successfully:", groupData);
       console.log("Creator automatically added as member");
       
@@ -194,6 +213,25 @@ export default function CreateGroup() {
     if (error) setError("");
   };
 
+  const handleAddTag = () => {
+    const trimmedTag = tagInput.trim();
+    if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
+      setTags(prev => [...prev, trimmedTag]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(prev => prev.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleTagInputKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
+
   return (
     <ProtectedRoute>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -201,7 +239,7 @@ export default function CreateGroup() {
         <div className="mb-8">
           <div className="flex items-center mb-6">
             <Link
-              href="/dashboard"
+              href="/"
               className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -209,11 +247,6 @@ export default function CreateGroup() {
             </Link>
           </div>
           <div className="text-center">
-            <div className="flex justify-center mb-6">
-              <div className="bg-purple-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center">
-                <Plus className="h-8 w-8" />
-              </div>
-            </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Create Study Group
             </h1>
@@ -300,6 +333,66 @@ export default function CreateGroup() {
                 placeholder="Describe what your study group will focus on, goals, and what members can expect..."
                 required
               />
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Tags <span className="text-gray-500">(optional, max 5)</span>
+            </label>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Hash className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <Input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyPress={handleTagInputKeyPress}
+                    className="pl-10"
+                    placeholder="Enter a tag (e.g., algorithms, midterm, advanced)"
+                    maxLength={20}
+                    disabled={tags.length >= 5}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  onClick={handleAddTag}
+                  disabled={!tagInput.trim() || tags.includes(tagInput.trim()) || tags.length >= 5}
+                  variant="outline"
+                  className="px-4"
+                >
+                  Add
+                </Button>
+              </div>
+              
+              {/* Display Tags */}
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <div
+                      key={tag}
+                      className="inline-flex items-center gap-1 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm border border-purple-200"
+                    >
+                      <span>{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:text-purple-900 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <p className="text-xs text-gray-500">
+                Tags help other students find your group more easily. Use relevant keywords like study topics, exam preparation, or difficulty level.
+              </p>
             </div>
           </div>
 

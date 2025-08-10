@@ -35,8 +35,8 @@ export default function Footer() {
               <Link href="/how-it-works" className="block text-gray-600 hover:text-purple-600 transition-colors">
                 How It Works
               </Link>
-              <Link href="/success-stories" className="block text-gray-600 hover:text-purple-600 transition-colors">
-                Success Stories
+              <Link href="/report-problem" className="block text-gray-600 hover:text-purple-600 transition-colors">
+                Report A Problem
               </Link>
             </div>
           </div>

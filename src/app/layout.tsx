@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import InstallPrompt from "@/components/InstallPrompt";
 import { AuthProvider } from "@/lib/auth";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,12 +18,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#9333ea',
+}
+
 export const metadata: Metadata = {
   title: "Zeno - Study Group Finder",
   description: "Find and join study groups with fellow students. Connect, collaborate, and succeed together.",
-  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   manifest: "/manifest.json",
-  themeColor: "#9333ea",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

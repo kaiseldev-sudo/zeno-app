@@ -194,9 +194,8 @@ export default function GroupDetailPage() {
         {/* Header */}
         <div className="mb-8">
           <Button
-            variant="ghost"
             onClick={() => router.push("/dashboard")}
-            className="mb-4"
+            className="mb-4 flex items-center bg-transparent hover:bg-transparent cursor-pointer shadow-none text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard

@@ -1,99 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, Users, Clock, MapPin, ExternalLink } from "lucide-react";
 import GroupCard from "@/components/GroupCard";
 import ProtectedRoute from "@/components/ProtectedRoute";
-
-// Mock data for study groups
-const mockGroups = [
-  {
-    id: "1",
-    name: "Advanced Calculus Study Circle",
-    subject: "Mathematics",
-    description: "Weekly calculus problem-solving sessions with focus on derivatives and integrals.",
-    frequency: "Twice weekly",
-    platform: "Discord + Meet",
-    members: 8,
-    maxMembers: 12,
-    schedule: "Mon/Wed 7:00 PM",
-    tags: ["Calculus", "Problem Solving", "Derivatives"],
-  },
-  {
-    id: "2",
-    name: "React Development Bootcamp",
-    subject: "Computer Science",
-    description: "Learn React fundamentals through hands-on projects and peer programming.",
-    frequency: "Daily",
-    platform: "Zoom",
-    members: 15,
-    maxMembers: 20,
-    schedule: "Daily 6:00 PM",
-    tags: ["React", "JavaScript", "Web Development"],
-  },
-  {
-    id: "3",
-    name: "Organic Chemistry Lab Prep",
-    subject: "Chemistry",
-    description: "Prepare for organic chemistry labs and review reaction mechanisms.",
-    frequency: "Weekly",
-    platform: "Google Meet",
-    members: 6,
-    maxMembers: 10,
-    schedule: "Saturdays 2:00 PM",
-    tags: ["Organic Chemistry", "Lab Prep", "Mechanisms"],
-  },
-  {
-    id: "4",
-    name: "Data Structures & Algorithms",
-    subject: "Computer Science",
-    description: "Master coding interviews and competitive programming together.",
-    frequency: "Twice weekly",
-    platform: "Discord",
-    members: 12,
-    maxMembers: 15,
-    schedule: "Tue/Thu 8:00 PM",
-    tags: ["Algorithms", "Data Structures", "Coding Interview"],
-  },
-  {
-    id: "5",
-    name: "Business Analytics Study Group",
-    subject: "Business",
-    description: "Analyze case studies and work on business strategy projects collaboratively.",
-    frequency: "Weekly",
-    platform: "Teams",
-    members: 9,
-    maxMembers: 12,
-    schedule: "Sundays 3:00 PM",
-    tags: ["Analytics", "Case Studies", "Strategy"],
-  },
-  {
-    id: "6",
-    name: "Physics Problem Solvers",
-    subject: "Physics",
-    description: "Tackle challenging physics problems from mechanics to quantum physics.",
-    frequency: "Twice weekly",
-    platform: "Zoom",
-    members: 7,
-    maxMembers: 10,
-    schedule: "Mon/Fri 5:00 PM",
-    tags: ["Physics", "Problem Solving", "Mechanics"],
-  },
-];
+import { supabase } from "@/lib/supabase";
 
 const subjects = ["All Subjects", "Computer Science", "Mathematics", "Physics", "Chemistry", "Business", "Engineering"];
 const frequencies = ["All Frequencies", "Daily", "Twice weekly", "Weekly", "Bi-weekly"];
 
+// Interface matching GroupCard expectations
+interface Group {
+  id: string;
+  name: string;
+  subject: string;
+  description: string;
+  frequency: string;
+  platform: string;
+  members: number;
+  maxMembers: number;
+  schedule: string;
+  tags: string[];
+  creator_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function Groups() {
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const [selectedFrequency, setSelectedFrequency] = useState("All Frequencies");
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredGroups = mockGroups.filter((group) => {
-    const matchesSearch = group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         group.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Fetch groups from Supabase
+  useEffect(() => {
+    async function fetchGroups() {
+      try {
+        const { data, error } = await supabase
+          .from('study_groups')
+          .select(`
+            *,
+            group_members(user_id),
+            tags(name)
+          `);
+
+        if (error) {
+          console.error('Error fetching groups:', error);
+          return;
+        }
+
+        // Transform data to match GroupCard interface
+        const groupsWithMembers = data?.map(group => ({
+          ...group,
+          members: group.group_members?.length || 0,
+          maxMembers: group.max_members,
+          tags: group.tags?.map((tag: any) => tag.name) || []
+        })) || [];
+
+        setGroups(groupsWithMembers);
+      } catch (error) {
+        console.error('Error fetching groups:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchGroups();
+  }, []);
+
+  const filteredGroups = groups.filter((group: any) => {
+    const matchesSearch = group.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         group.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         group.tags?.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesSubject = selectedSubject === "All Subjects" || group.subject === selectedSubject;
     const matchesFrequency = selectedFrequency === "All Frequencies" || group.frequency === selectedFrequency;
@@ -182,21 +162,31 @@ export default function Groups() {
       </div>
 
       {/* Results Count */}
-      <div className="mb-6">
-        <p className="text-gray-600 dark:text-gray-400">
-          Showing {filteredGroups.length} study group{filteredGroups.length !== 1 ? 's' : ''}
-        </p>
-      </div>
+      {!loading && (
+        <div className="mb-6">
+          <p className="text-gray-600 dark:text-gray-400">
+            Showing {filteredGroups.length} study group{filteredGroups.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
 
-      {/* Groups Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredGroups.map((group) => (
-          <GroupCard key={group.id} group={group} />
-        ))}
-      </div>
+      {/* Loading State */}
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading study groups...</p>
+        </div>
+      ) : (
+        /* Groups Grid */
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredGroups.map((group) => (
+            <GroupCard key={group.id} group={group} />
+          ))}
+        </div>
+      )}
 
       {/* No Results */}
-      {filteredGroups.length === 0 && (
+      {!loading && filteredGroups.length === 0 && (
         <div className="text-center py-12">
           <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">

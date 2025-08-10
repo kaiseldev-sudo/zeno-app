@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, GraduationCap, Calendar, Eye, EyeOff, Loader2, UserPlus, CheckCircle, Check, X } from "lucide-react";
+import { User, Mail, Lock, GraduationCap, Calendar, Eye, EyeOff, Loader2, UserPlus, CheckCircle, Check, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SecureForm from "@/components/SecureForm";
@@ -11,6 +11,7 @@ import PasswordValidation from "@/components/PasswordValidation";
 import { RATE_LIMITS } from "@/lib/security";
 import { useAuth } from "@/lib/auth";
 import { validatePassword } from "@/lib/passwordValidation";
+import { useEmailUniqueness } from "@/hooks/useEmailUniqueness";
 
 export default function SignUp() {
   const router = useRouter();
@@ -32,6 +33,15 @@ export default function SignUp() {
   // Password validation
   const passwordValidation = useMemo(() => validatePassword(formData.password), [formData.password]);
   const passwordsMatch = formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
+
+  // Email uniqueness validation
+  const {
+    isChecking: isCheckingEmail,
+    isAvailable: isEmailAvailable,
+    error: emailError,
+    checkEmail,
+    clearCheck: clearEmailCheck
+  } = useEmailUniqueness();
 
   const subjects = [
     "Computer Science",
@@ -89,6 +99,19 @@ export default function SignUp() {
       throw new Error("Please enter your full name");
     }
 
+    // Check email uniqueness
+    if (isEmailAvailable === false) {
+      setError("This email address is already registered. Please use a different email.");
+      setLoading(false);
+      throw new Error("Email address already registered");
+    }
+
+    if (isEmailAvailable === null && data.email) {
+      setError("Please wait while we verify your email address.");
+      setLoading(false);
+      throw new Error("Email verification in progress");
+    }
+
     if (!data.course) {
       setError("Please select your course/subject");
       setLoading(false);
@@ -131,12 +154,23 @@ export default function SignUp() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    
     // Clear error when user starts typing
     if (error) setError("");
+    
+    // Trigger email uniqueness check when email changes
+    if (name === 'email') {
+      if (value.trim()) {
+        checkEmail(value);
+      } else {
+        clearEmailCheck();
+      }
+    }
   };
 
   if (success) {
@@ -241,10 +275,50 @@ export default function SignUp() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="pl-10 h-12"
+                className={`pl-10 pr-10 h-12 ${
+                  isEmailAvailable === false ? 'border-red-500 focus:border-red-600' :
+                  isEmailAvailable === true ? 'border-green-500 focus:border-green-600' :
+                  'border-gray-300'
+                }`}
                 placeholder="Enter your email"
               />
+              
+              {/* Email validation status icon */}
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                {isCheckingEmail ? (
+                  <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+                ) : isEmailAvailable === true ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : isEmailAvailable === false ? (
+                  <X className="h-4 w-4 text-red-500" />
+                ) : null}
+              </div>
             </div>
+            
+            {/* Email validation message */}
+            {(emailError || isEmailAvailable === false || isEmailAvailable === true) && (
+              <div className={`text-sm mt-2 ${
+                emailError || isEmailAvailable === false ? 'text-red-600' : 'text-green-600'
+              }`}>
+                {emailError ? (
+                  <div className="flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {emailError}
+                  </div>
+                ) : isEmailAvailable === false ? (
+                  <div className="flex items-center">
+                    <X className="h-4 w-4 mr-1" />
+                    This email address is already registered. Please use a different email or try{' '}
+                    <Link href="/login" className="underline ml-1">signing in</Link> instead.
+                  </div>
+                ) : isEmailAvailable === true ? (
+                  <div className="flex items-center">
+                    <Check className="h-4 w-4 mr-1" />
+                    Email address is available
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
 
           {/* Course Field */}

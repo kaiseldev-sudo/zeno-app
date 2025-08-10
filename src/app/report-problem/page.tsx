@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bug, MessageSquare, AlertTriangle, Lightbulb, Send, CheckCircle } from "lucide-react";
+import { ArrowLeft, Bug, MessageSquare, AlertTriangle, Lightbulb, Send, CheckCircle, Check, X, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { useEmailValidation } from "@/hooks/useEmailValidation";
+import { emailValidationService } from "@/lib/emailValidation";
+import { sanitizeFormData, validateSanitizedData, sanitizeName, sanitizeSubject, sanitizeTextarea } from "@/lib/inputSanitization";
 
 export default function ReportProblem() {
   const { user } = useAuth();
@@ -26,6 +29,15 @@ export default function ReportProblem() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  
+  // Email validation
+  const {
+    validationResult,
+    isValidating: isValidatingEmail,
+    validateEmail,
+    clearValidation,
+    acceptSuggestion
+  } = useEmailValidation();
 
   // Auto-fill email if user is logged in
   useEffect(() => {
@@ -77,7 +89,44 @@ export default function ReportProblem() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let sanitizedValue = value;
+    
+    // Apply real-time sanitization based on field type
+    switch (name) {
+      case 'name':
+        console.log('Before sanitization:', JSON.stringify(value));
+        sanitizedValue = sanitizeName(value);
+        console.log('After sanitization:', JSON.stringify(sanitizedValue));
+        break;
+      case 'subject':
+        sanitizedValue = sanitizeSubject(value);
+        break;
+      case 'description':
+      case 'steps':
+      case 'expectedBehavior':
+      case 'actualBehavior':
+        sanitizedValue = sanitizeTextarea(value);
+        break;
+      case 'email':
+        // Don't sanitize email during typing to allow validation
+        sanitizedValue = value;
+        break;
+      default:
+        // For select fields, keep original value as they're controlled
+        sanitizedValue = value;
+    }
+    
+    setFormData({ ...formData, [name]: sanitizedValue });
+    
+    // Trigger email validation when email field changes
+    if (name === 'email') {
+      if (value.trim()) {
+        validateEmail(value);
+      } else {
+        clearValidation();
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,24 +135,42 @@ export default function ReportProblem() {
     setSubmitError("");
 
     try {
-      // Get browser and device info automatically
-      const browserInfo = `${navigator.userAgent}`;
-      const deviceInfo = `Screen: ${screen.width}x${screen.height}, Platform: ${navigator.platform}`;
+      // Sanitize all form data before validation and submission
+      const sanitizedData = sanitizeFormData(formData);
+      
+      // Validate sanitized data
+      const validation = validateSanitizedData(sanitizedData);
+      if (!validation.isValid) {
+        setSubmitError(`Validation failed: ${validation.errors.join(', ')}`);
+        setIsSubmitting(false);
+        return;
+      }
 
-      // Prepare the data for submission
+      // Validate email before submission
+      if (sanitizedData.email && validationResult && !validationResult.isValid) {
+        setSubmitError("Please provide a valid email address before submitting.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Get browser and device info automatically (also sanitize these)
+      const browserInfo = navigator.userAgent.replace(/[<>'"&]/g, '').substring(0, 500);
+      const deviceInfo = `Screen: ${screen.width}x${screen.height}, Platform: ${navigator.platform}`.replace(/[<>'"&]/g, '').substring(0, 200);
+
+      // Prepare the sanitized data for submission
       const reportData = {
         user_id: user?.id || null,
-        user_email: formData.email,
-        user_name: formData.name || null,
-        problem_type: formData.type,
-        title: formData.subject,
-        description: formData.description,
-        steps_to_reproduce: formData.steps || null,
-        expected_behavior: formData.expectedBehavior || null,
-        actual_behavior: formData.actualBehavior || null,
-        browser_info: formData.browser ? `${formData.browser} - ${browserInfo}` : browserInfo,
-        device_info: formData.device ? `${formData.device} - ${deviceInfo}` : deviceInfo,
-        urgency: formData.urgency,
+        user_email: sanitizedData.email,
+        user_name: sanitizedData.name || null,
+        problem_type: sanitizedData.type,
+        title: sanitizedData.subject,
+        description: sanitizedData.description,
+        steps_to_reproduce: sanitizedData.steps || null,
+        expected_behavior: sanitizedData.expectedBehavior || null,
+        actual_behavior: sanitizedData.actualBehavior || null,
+        browser_info: sanitizedData.browser ? `${sanitizedData.browser} - ${browserInfo}` : browserInfo,
+        device_info: sanitizedData.device ? `${sanitizedData.device} - ${deviceInfo}` : deviceInfo,
+        urgency: sanitizedData.urgency,
         status: 'open'
       };
 
@@ -122,6 +189,52 @@ export default function ReportProblem() {
       setSubmitError(error.message || 'Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Handle accepting email suggestion
+  const handleAcceptSuggestion = () => {
+    if (validationResult?.suggestion) {
+      const suggestion = validationResult.suggestion;
+      setFormData({ ...formData, email: suggestion });
+      // Clear current validation and re-validate the corrected email
+      clearValidation();
+      validateEmail(suggestion);
+    }
+  };
+
+  // Get email validation status styling
+  const getEmailValidationStyles = () => {
+    if (!validationResult) return {};
+    
+    const status = emailValidationService.getValidationStatus(validationResult);
+    const baseClasses = "transition-colors duration-200";
+    
+    switch (status) {
+      case 'success':
+        return {
+          borderClass: 'border-green-500 focus:border-green-600',
+          bgClass: 'bg-white',
+          textClass: 'text-green-600'
+        };
+      case 'warning':
+        return {
+          borderClass: 'border-yellow-500 focus:border-yellow-600',
+          bgClass: 'bg-yellow-50',
+          textClass: 'text-yellow-600'
+        };
+      case 'error':
+        return {
+          borderClass: 'border-red-500 focus:border-red-600',
+          bgClass: 'bg-red-50',
+          textClass: 'text-red-600'
+        };
+      default:
+        return {
+          borderClass: 'border-gray-300 focus:border-purple-500',
+          bgClass: 'bg-white',
+          textClass: 'text-gray-600'
+        };
     }
   };
 
@@ -276,6 +389,9 @@ export default function ReportProblem() {
                   onChange={handleInputChange}
                   placeholder="Brief description of the problem"
                   className="w-full"
+                  maxLength={200}
+                  pattern="[^<>]*"
+                  title="Special characters like < and > are not allowed"
                 />
               </div>
               <div>
@@ -299,16 +415,64 @@ export default function ReportProblem() {
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address <span className="text-red-500">*</span>
                 </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="your.email@example.com"
-                  className="w-full"
-                />
+                <div className="relative">
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="your.email@example.com"
+                    className={`w-full pr-10 ${getEmailValidationStyles().borderClass || ''} ${getEmailValidationStyles().bgClass || ''}`}
+                  />
+                  
+                  {/* Validation Status Icon */}
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    {isValidatingEmail ? (
+                      <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+                    ) : validationResult ? (
+                      <>
+                        {emailValidationService.getValidationStatus(validationResult) === 'success' && (
+                          <Check className="h-4 w-4 text-green-500" />
+                        )}
+                        {emailValidationService.getValidationStatus(validationResult) === 'warning' && (
+                          <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        )}
+                        {emailValidationService.getValidationStatus(validationResult) === 'error' && (
+                          <X className="h-4 w-4 text-red-500" />
+                        )}
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+                
+                {/* Validation Message and Suggestion */}
+                {validationResult && (
+                  <div className={`mt-2 text-sm ${getEmailValidationStyles().textClass || 'text-gray-600'}`}>
+                    <div className="flex items-start justify-between">
+                      <span>{emailValidationService.getValidationMessage(validationResult)}</span>
+                      {validationResult.suggestion && (
+                        <button
+                          type="button"
+                          onClick={handleAcceptSuggestion}
+                          className="ml-2 text-purple-600 hover:text-purple-700 underline text-xs"
+                        >
+                          Use suggestion
+                        </button>
+                      )}
+                    </div>
+                    
+                    {/* Additional Details for Valid Emails */}
+                    {validationResult.isValid && validationResult.qualityScore > 0 && (
+                      <div className="mt-1 text-xs text-gray-500">
+                        Quality score: {Math.round(validationResult.qualityScore * 100)}%
+                        {validationResult.details.isFreeEmail && ' • Free email provider'}
+                        {validationResult.details.isRoleEmail && ' • Role-based email'}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -322,6 +486,9 @@ export default function ReportProblem() {
                   onChange={handleInputChange}
                   placeholder="Your full name (optional)"
                   className="w-full"
+                  maxLength={100}
+                  pattern="[a-zA-Z\s\-'\.àáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ]*"
+                  title="Only letters, spaces, hyphens, and apostrophes are allowed"
                 />
               </div>
             </div>
@@ -346,6 +513,7 @@ export default function ReportProblem() {
                   onChange={handleInputChange}
                   placeholder="Please describe the problem in detail. What happened? What did you expect to happen?"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                  maxLength={5000}
                 />
               </div>
 
@@ -363,6 +531,7 @@ export default function ReportProblem() {
                       onChange={handleInputChange}
                       placeholder="1. Go to...&#10;2. Click on...&#10;3. See error..."
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                      maxLength={5000}
                     />
                   </div>
                   <div className="grid md:grid-cols-2 gap-6">
@@ -378,6 +547,7 @@ export default function ReportProblem() {
                         onChange={handleInputChange}
                         placeholder="What should happen?"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                        maxLength={5000}
                       />
                     </div>
                     <div>
@@ -392,6 +562,7 @@ export default function ReportProblem() {
                         onChange={handleInputChange}
                         placeholder="What actually happened?"
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 resize-none"
+                        maxLength={5000}
                       />
                     </div>
                   </div>
@@ -448,6 +619,17 @@ export default function ReportProblem() {
               </div>
             </div>
           )}
+
+          {/* Security Notice */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-green-900 mb-3">
+              🔒 Security & Input Validation
+            </h3>
+            <p className="text-sm text-green-800">
+              All form inputs are automatically sanitized to prevent security vulnerabilities. 
+              Script tags, dangerous HTML, and potentially harmful content are automatically removed or encoded.
+            </p>
+          </div>
 
           {/* Tips */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">

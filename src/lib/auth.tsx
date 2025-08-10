@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase, safeGetSession, safeSignOut, getBaseUrl } from "./supabase";
 import { checkRateLimit, RATE_LIMITS, createRateLimitError } from "./security";
+import { checkEmailUniquenessClient } from "./emailUniqueness";
 
 interface AuthContextType {
   user: User | null;
@@ -79,6 +80,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { data: null, error: rateLimitError };
       }
 
+      // Check email uniqueness before attempting signup
+      const emailUniquenessResult = await checkEmailUniquenessClient(email);
+      if (!emailUniquenessResult.isAvailable) {
+        const error = emailUniquenessResult.error || 
+          'This email address is already registered. Please use a different email or try signing in instead.';
+        return { data: null, error: { message: error } };
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -88,7 +97,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific Supabase auth errors
+        if (error.message?.includes('User already registered')) {
+          const customError = { 
+            message: 'This email address is already registered. Please use a different email or try signing in instead.' 
+          };
+          return { data: null, error: customError };
+        }
+        throw error;
+      }
 
       // Create profile record
       if (data.user) {
@@ -104,12 +122,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (profileError) {
           console.error('Error creating profile:', profileError);
+          
+          // Handle unique constraint violation on email
+          if (profileError.code === '23505' && profileError.message?.includes('email')) {
+            const customError = { 
+              message: 'This email address is already registered. Please use a different email or try signing in instead.' 
+            };
+            return { data: null, error: customError };
+          }
         }
       }
 
       return { data, error: null };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sign up error:', error);
+      
+      // Handle specific error cases
+      if (error.message?.includes('User already registered') || 
+          error.message?.includes('email') && error.message?.includes('already')) {
+        const customError = { 
+          message: 'This email address is already registered. Please use a different email or try signing in instead.' 
+        };
+        return { data: null, error: customError };
+      }
+      
       return { data: null, error };
     }
   };

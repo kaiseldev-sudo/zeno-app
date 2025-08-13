@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { useEmailValidation } from "@/hooks/useEmailValidation";
 import { emailValidationService } from "@/lib/emailValidation";
-import { sanitizeFormData, validateSanitizedData, sanitizeName, sanitizeSubject, sanitizeTextarea } from "@/lib/inputSanitization";
+import { sanitizeInput, sanitizeName, sanitizeEmail } from "@/lib/inputSanitization";
 
 export default function ReportProblem() {
   const { user } = useAuth();
@@ -95,18 +95,16 @@ export default function ReportProblem() {
     // Apply real-time sanitization based on field type
     switch (name) {
       case 'name':
-        console.log('Before sanitization:', JSON.stringify(value));
         sanitizedValue = sanitizeName(value);
-        console.log('After sanitization:', JSON.stringify(sanitizedValue));
         break;
       case 'subject':
-        sanitizedValue = sanitizeSubject(value);
+        sanitizedValue = sanitizeInput(value, { maxLength: 200 });
         break;
       case 'description':
       case 'steps':
       case 'expectedBehavior':
       case 'actualBehavior':
-        sanitizedValue = sanitizeTextarea(value);
+        sanitizedValue = sanitizeInput(value, { maxLength: 1000 });
         break;
       case 'email':
         // Don't sanitize email during typing to allow validation
@@ -136,12 +134,33 @@ export default function ReportProblem() {
 
     try {
       // Sanitize all form data before validation and submission
-      const sanitizedData = sanitizeFormData(formData);
+      const sanitizedData = {
+        type: formData.type,
+        subject: sanitizeInput(formData.subject, { maxLength: 200 }),
+        email: sanitizeEmail(formData.email),
+        name: sanitizeName(formData.name),
+        description: sanitizeInput(formData.description, { maxLength: 1000 }),
+        steps: sanitizeInput(formData.steps, { maxLength: 1000 }),
+        expectedBehavior: sanitizeInput(formData.expectedBehavior, { maxLength: 1000 }),
+        actualBehavior: sanitizeInput(formData.actualBehavior, { maxLength: 1000 }),
+        browser: formData.browser,
+        device: formData.device,
+        urgency: formData.urgency
+      };
       
-      // Validate sanitized data
-      const validation = validateSanitizedData(sanitizedData);
-      if (!validation.isValid) {
-        setSubmitError(`Validation failed: ${validation.errors.join(', ')}`);
+      // Basic validation
+      if (!sanitizedData.type) {
+        setSubmitError("Please select a problem type");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!sanitizedData.subject.trim()) {
+        setSubmitError("Please provide a subject");
+        setIsSubmitting(false);
+        return;
+      }
+      if (!sanitizedData.description.trim()) {
+        setSubmitError("Please provide a description");
         setIsSubmitting(false);
         return;
       }

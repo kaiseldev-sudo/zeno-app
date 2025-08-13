@@ -12,6 +12,7 @@ import { RATE_LIMITS } from "@/lib/security";
 import { useAuth } from "@/lib/auth";
 import { validatePassword } from "@/lib/passwordValidation";
 import { useEmailUniqueness } from "@/hooks/useEmailUniqueness";
+import { sanitizeEmail, sanitizePassword, sanitizeName, sanitizeCourse, sanitizeYearLevel } from "@/lib/inputSanitization";
 
 export default function SignUp() {
   const router = useRouter();
@@ -72,12 +73,12 @@ export default function SignUp() {
     setLoading(true);
 
     const data = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-      confirmPassword: formData.get('confirmPassword') as string,
-      course: formData.get('course') as string,
-      yearLevel: formData.get('yearLevel') as string
+      name: sanitizeName(formData.get('name') as string),
+      email: sanitizeEmail(formData.get('email') as string),
+      password: sanitizePassword(formData.get('password') as string),
+      confirmPassword: sanitizePassword(formData.get('confirmPassword') as string),
+      course: sanitizeCourse(formData.get('course') as string),
+      yearLevel: sanitizeYearLevel(formData.get('yearLevel') as string)
     };
 
     // Validate form
@@ -155,9 +156,26 @@ export default function SignUp() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    let sanitizedValue = value;
+    
+    // Apply appropriate sanitization based on field type
+    if (name === 'email') {
+      sanitizedValue = sanitizeEmail(value);
+    } else if (name === 'password') {
+      sanitizedValue = sanitizePassword(value);
+    } else if (name === 'confirmPassword') {
+      sanitizedValue = sanitizePassword(value);
+    } else if (name === 'name') {
+      sanitizedValue = sanitizeName(value);
+    } else if (name === 'course') {
+      sanitizedValue = sanitizeCourse(value);
+    } else if (name === 'yearLevel') {
+      sanitizedValue = sanitizeYearLevel(value);
+    }
+    
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: sanitizedValue,
     });
     
     // Clear error when user starts typing
@@ -165,8 +183,8 @@ export default function SignUp() {
     
     // Trigger email uniqueness check when email changes
     if (name === 'email') {
-      if (value.trim()) {
-        checkEmail(value);
+      if (sanitizedValue.trim()) {
+        checkEmail(sanitizedValue);
       } else {
         clearEmailCheck();
       }

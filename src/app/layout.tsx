@@ -98,8 +98,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <MaintenanceProvider>
-            <MaintenanceGuard>
               <div className="min-h-screen flex flex-col">
                 <Navbar />
                 <main className="flex-1 pb-16 md:pb-0">
@@ -109,8 +107,6 @@ export default function RootLayout({
                 <MobileBottomNav />
                 <InstallPrompt />
               </div>
-            </MaintenanceGuard>
-          </MaintenanceProvider>
         </AuthProvider>
       </body>
     </html>

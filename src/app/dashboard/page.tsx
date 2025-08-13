@@ -147,7 +147,7 @@ export default function Dashboard() {
                   type="text"
                   placeholder="Search groups, subjects, or topics..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                                          onChange={(e) => setSearchTerm(sanitizeInput(e.target.value, { maxLength: 100 }))}
                   className="pl-10 border-purple-300"
                 />
               </div>

@@ -7,6 +7,7 @@ import { Lock, Eye, EyeOff, Loader2, CheckCircle, KeyRound } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
+import { sanitizePassword } from "@/lib/inputSanitization";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -41,9 +42,16 @@ function ResetPasswordForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    let sanitizedValue = value;
+    
+    // Apply appropriate sanitization based on field type
+    if (name === 'password' || name === 'confirmPassword') {
+      sanitizedValue = sanitizePassword(value);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: sanitizedValue
     }));
     // Clear error when user starts typing
     if (error) setError("");

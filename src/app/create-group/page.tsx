@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { sanitizeName, sanitizeInput } from "@/lib/inputSanitization";
 
 export default function CreateGroup() {
   const { user } = useAuth();
@@ -176,9 +177,23 @@ export default function CreateGroup() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    let sanitizedValue = value;
+    
+    // Apply appropriate sanitization based on field type
+    if (name === 'name') {
+      sanitizedValue = sanitizeName(value);
+    } else if (name === 'description') {
+      sanitizedValue = sanitizeInput(value, { maxLength: 1000 });
+    } else if (name === 'subject' || name === 'frequency' || name === 'platform') {
+      sanitizedValue = sanitizeInput(value, { maxLength: 100 });
+    } else if (name === 'maxMembers') {
+      sanitizedValue = value; // Keep as is for number input
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: sanitizedValue,
     });
     // Clear error when user starts typing
     if (error) setError("");
@@ -214,7 +229,7 @@ export default function CreateGroup() {
   };
 
   const handleAddTag = () => {
-    const trimmedTag = tagInput.trim();
+    const trimmedTag = sanitizeInput(tagInput.trim(), { maxLength: 50 });
     if (trimmedTag && !tags.includes(trimmedTag) && tags.length < 5) {
       setTags(prev => [...prev, trimmedTag]);
       setTagInput("");
@@ -350,7 +365,7 @@ export default function CreateGroup() {
                   <Input
                     type="text"
                     value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
+                                            onChange={(e) => setTagInput(sanitizeInput(e.target.value, { maxLength: 50 }))}
                     onKeyPress={handleTagInputKeyPress}
                     className="pl-10"
                     placeholder="Enter a tag (e.g., algorithms, midterm, advanced)"

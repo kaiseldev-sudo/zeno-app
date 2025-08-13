@@ -11,6 +11,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import Link from "next/link";
+import { sanitizeName, sanitizeInput } from "@/lib/inputSanitization";
 
 interface GroupMember {
   id: string;
@@ -491,7 +492,7 @@ export default function ManageGroupPage() {
                       </label>
                       <Input
                         value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                        onChange={(e) => setFormData({...formData, name: sanitizeName(e.target.value)})}
                         placeholder="Enter group name"
                       />
                     </div>
@@ -501,7 +502,7 @@ export default function ManageGroupPage() {
                       </label>
                       <textarea
                         value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        onChange={(e) => setFormData({...formData, description: sanitizeInput(e.target.value, { maxLength: 500 })})}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-purple-500 focus:border-purple-500"
                         rows={3}
                         placeholder="Enter group description"

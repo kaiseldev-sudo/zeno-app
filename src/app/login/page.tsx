@@ -11,6 +11,7 @@ import SecureForm from "@/components/SecureForm";
 import PasswordValidation from "@/components/PasswordValidation";
 import { RATE_LIMITS } from "@/lib/security";
 import { validatePassword } from "@/lib/passwordValidation";
+import { sanitizeEmail, sanitizePassword } from "@/lib/inputSanitization";
 
 export default function Login() {
   const router = useRouter();
@@ -39,9 +40,18 @@ export default function Login() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    let sanitizedValue = value;
+    
+    // Apply appropriate sanitization based on field type
+    if (name === 'email') {
+      sanitizedValue = sanitizeEmail(value);
+    } else if (name === 'password') {
+      sanitizedValue = sanitizePassword(value);
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: sanitizedValue
     }));
   };
 
@@ -49,8 +59,8 @@ export default function Login() {
     setIsLoading(true);
     setError("");
 
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    const email = sanitizeEmail(formData.get('email') as string);
+    const password = sanitizePassword(formData.get('password') as string);
 
     const { data, error } = await signIn(email, password);
 

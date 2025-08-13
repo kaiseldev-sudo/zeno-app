@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { supabase, type SocialContact } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
+import { sanitizePassword, sanitizeName, sanitizeCourse, sanitizeYearLevel } from "@/lib/inputSanitization";
 
 interface UserProfile {
   id: string;
@@ -401,7 +402,7 @@ export default function ProfilePage() {
                         </label>
                         <Input
                           value={basicForm.name}
-                          onChange={(e) => setBasicForm({...basicForm, name: e.target.value})}
+                          onChange={(e) => setBasicForm({...basicForm, name: sanitizeName(e.target.value)})}
                           placeholder="Enter your full name"
                         />
                       </div>
@@ -411,7 +412,7 @@ export default function ProfilePage() {
                         </label>
                         <Input
                           value={basicForm.course}
-                          onChange={(e) => setBasicForm({...basicForm, course: e.target.value})}
+                          onChange={(e) => setBasicForm({...basicForm, course: sanitizeCourse(e.target.value)})}
                           placeholder="e.g., Computer Science"
                         />
                       </div>
@@ -423,7 +424,7 @@ export default function ProfilePage() {
                         </label>
                         <select
                           value={basicForm.year_level}
-                          onChange={(e) => setBasicForm({...basicForm, year_level: e.target.value})}
+                          onChange={(e) => setBasicForm({...basicForm, year_level: sanitizeYearLevel(e.target.value)})}
                           className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-purple-500 focus:border-purple-500"
                         >
                           <option value="">Select year level</option>
@@ -452,7 +453,7 @@ export default function ProfilePage() {
                       </label>
                       <textarea
                         value={basicForm.bio}
-                        onChange={(e) => setBasicForm({...basicForm, bio: e.target.value})}
+                        onChange={(e) => setBasicForm({...basicForm, bio: sanitizeInput(e.target.value, { maxLength: 500 })})}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-purple-500 focus:border-purple-500"
                         rows={3}
                         placeholder="Tell us a bit about yourself..."
@@ -524,7 +525,7 @@ export default function ProfilePage() {
                       </label>
                       <select
                         value={socialForm.platform}
-                        onChange={(e) => setSocialForm({...socialForm, platform: e.target.value})}
+                        onChange={(e) => setSocialForm({...socialForm, platform: sanitizeInput(e.target.value, { maxLength: 50 })})}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500 bg-white"
                       >
                         <option value="">Select platform</option>
@@ -542,7 +543,7 @@ export default function ProfilePage() {
                       </label>
                       <Input
                         value={socialForm.username}
-                        onChange={(e) => setSocialForm({...socialForm, username: e.target.value})}
+                        onChange={(e) => setSocialForm({...socialForm, username: sanitizeInput(e.target.value, { maxLength: 100 })})}
                         placeholder={
                           socialForm.platform 
                             ? socialPlatforms.find(p => p.name === socialForm.platform)?.placeholder 
@@ -688,7 +689,7 @@ export default function ProfilePage() {
                         <Input
                           type={showPasswords.current ? "text" : "password"}
                           value={passwordForm.current_password}
-                          onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})}
+                          onChange={(e) => setPasswordForm({...passwordForm, current_password: sanitizePassword(e.target.value)})}
                           placeholder="Enter current password"
                           className="pr-10"
                         />
@@ -714,7 +715,7 @@ export default function ProfilePage() {
                         <Input
                           type={showPasswords.new ? "text" : "password"}
                           value={passwordForm.new_password}
-                          onChange={(e) => setPasswordForm({...passwordForm, new_password: e.target.value})}
+                          onChange={(e) => setPasswordForm({...passwordForm, new_password: sanitizePassword(e.target.value)})}
                           placeholder="Enter new password"
                           className="pr-10"
                         />
@@ -740,7 +741,7 @@ export default function ProfilePage() {
                         <Input
                           type={showPasswords.confirm ? "text" : "password"}
                           value={passwordForm.confirm_password}
-                          onChange={(e) => setPasswordForm({...passwordForm, confirm_password: e.target.value})}
+                          onChange={(e) => setPasswordForm({...passwordForm, confirm_password: sanitizePassword(e.target.value)})}
                           placeholder="Confirm new password"
                           className="pr-10"
                         />

@@ -6,6 +6,7 @@ import { Mail, ArrowLeft, Loader2, CheckCircle, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase, getBaseUrl } from "@/lib/supabase";
+import { sanitizeEmail } from "@/lib/inputSanitization";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -19,7 +20,8 @@ export default function ForgotPassword() {
     setError("");
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const sanitizedEmail = sanitizeEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
         redirectTo: `${getBaseUrl()}/reset-password`,
       });
 
@@ -146,7 +148,7 @@ export default function ForgotPassword() {
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(sanitizeEmail(e.target.value))}
                 className="pl-10 h-12"
                 placeholder="Enter your email address"
               />

@@ -214,7 +214,7 @@ export default function MyGroupsPage() {
                     type="text"
                     placeholder="Search your groups..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                                            onChange={(e) => setSearchTerm(sanitizeInput(e.target.value, { maxLength: 100 }))}
                     className="pl-10 border-purple-300"
                   />
                 </div>

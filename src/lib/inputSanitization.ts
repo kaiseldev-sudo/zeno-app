@@ -1,9 +1,6 @@
-import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
+import DOMPurify from 'isomorphic-dompurify';
 
-// Create a JSDOM environment for DOMPurify to work in Node.js
-const window = new JSDOM('').window;
-const purify = DOMPurify(window as any);
+// DOMPurify instance - isomorphic-dompurify handles both client and server environments
 
 /**
  * Sanitizes user input to prevent XSS attacks
@@ -44,14 +41,14 @@ export function sanitizeInput(
   // Sanitize HTML
   if (allowHTML) {
     // Allow only safe HTML tags and attributes
-    sanitized = purify.sanitize(sanitized, {
+    sanitized = DOMPurify.sanitize(sanitized, {
       ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'u', 'br'],
       ALLOWED_ATTR: [],
       KEEP_CONTENT: true
     });
   } else {
     // Strip all HTML and encode special characters
-    sanitized = purify.sanitize(sanitized, {
+    sanitized = DOMPurify.sanitize(sanitized, {
       ALLOWED_TAGS: [],
       ALLOWED_ATTR: [],
       KEEP_CONTENT: true

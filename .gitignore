@@ -154,3 +154,10 @@ generate-icons.html
 .eslintcache
 
 SECURITY_IMPLEMENTATION.md
+
+# Database and maintenance files
+MAINTENANCE_MODE_README.md
+database_schema.sql
+database_schema_updated.sql
+insert_sample_groups.sql
+problem_reports_schema.sql

@@ -6,6 +6,7 @@ import { Mail, ArrowLeft, Loader2, CheckCircle, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase, getBaseUrl } from "@/lib/supabase";
+import { checkEmailExists } from "@/lib/auth";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -19,14 +20,41 @@ export default function ForgotPassword() {
     setError("");
 
     try {
+      console.log('Submitting email for password reset:', email);
+      
+      // First, check if the email exists in our profiles table
+      const { exists, error: checkError } = await checkEmailExists(email);
+      
+      console.log('Email check result:', { exists, checkError });
+      
+      if (checkError) {
+        console.error('Email check error:', checkError);
+        throw new Error("Failed to verify email address");
+      }
+
+      if (!exists) {
+        console.log('Email does not exist, showing success message without sending email');
+        // Don't reveal that the email doesn't exist for security reasons
+        // Instead, show the same success message as if the email was sent
+        setSuccess(true);
+        return;
+      }
+
+      console.log('Email exists, sending password reset email');
+      // Email exists, proceed with password reset
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${getBaseUrl()}/reset-password`,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Password reset error:', error);
+        throw error;
+      }
 
+      console.log('Password reset email sent successfully');
       setSuccess(true);
     } catch (error: any) {
+      console.error('Handle submit error:', error);
       setError(error.message || "Failed to send reset email");
     } finally {
       setLoading(false);

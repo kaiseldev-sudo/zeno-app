@@ -235,3 +235,47 @@ export function useAuth() {
   }
   return context;
 }
+
+// Function to check if email exists in auth.users table
+export const checkEmailExists = async (email: string) => {
+  try {
+    console.log('checkEmailExists called with:', email);
+    
+    // Try to sign in with a dummy password to check if user exists
+    // This is a common pattern to check user existence without revealing if password is correct
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: 'dummy-password-for-checking-existence'
+    });
+
+    console.log('Auth error in checkEmailExists:', error?.message);
+
+    // If we get "Invalid login credentials", the user exists but password is wrong
+    // If we get "User not found" or similar, the user doesn't exist
+    if (error) {
+      if (error.message?.includes('Invalid login credentials') || 
+          error.message?.includes('Invalid login')) {
+        // User exists but password is wrong
+        console.log('User exists (invalid credentials)');
+        return { exists: true, error: null };
+      } else if (error.message?.includes('User not found') || 
+                 error.message?.includes('not found') ||
+                 error.message?.includes('Email not confirmed')) {
+        // User doesn't exist
+        console.log('User does not exist');
+        return { exists: false, error: null };
+      } else {
+        // Some other error, treat as user doesn't exist for security
+        console.log('Other error, treating as user does not exist:', error.message);
+        return { exists: false, error: null };
+      }
+    }
+
+    // This shouldn't happen with a dummy password, but just in case
+    console.log('No error returned, user exists');
+    return { exists: true, error: null };
+  } catch (error) {
+    console.error('Error checking email existence:', error);
+    return { exists: false, error: 'Failed to verify email address' };
+  }
+};

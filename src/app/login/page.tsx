@@ -52,13 +52,19 @@ export default function Login() {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    const { data, error } = await signIn(email, password);
+    try {
+      const { data, error } = await signIn(email, password);
 
-    if (error) {
-      setError(error.message || "Failed to sign in");
-      throw new Error(error.message || "Failed to sign in");
-    } else {
-      router.push("/dashboard");
+      if (error) {
+        setError(error.message || "Failed to sign in");
+        setIsLoading(false);
+        throw new Error(error.message || "Failed to sign in");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setIsLoading(false);
+      throw err;
     }
 
     setIsLoading(false);
